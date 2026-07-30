@@ -1,0 +1,485 @@
+const BUILD_VERSION = "2026-07-30.3";
+
+// ---------------------------------------------------------------------
+// i18n
+// ---------------------------------------------------------------------
+let LANG = localStorage.getItem("lang") || "vi";
+
+const STR = {
+  appTitle:      { vi: "Tra c\u1ee9u d\u00e0n ng\u01b0ng", en: "Condenser Lookup" },
+  home:          { vi: "Trang ch\u1ee7", en: "Home" },
+  back:          { vi: "\u2190 Quay l\u1ea1i", en: "\u2190 Back" },
+  chooseSource:  { vi: "Ch\u1ecdn h\u00e3ng / d\u00f2ng s\u1ea3n ph\u1ea9m", en: "Choose a manufacturer / product line" },
+  chooseBrand:   { vi: "Ch\u1ecdn h\u00e3ng s\u1ea3n xu\u1ea5t", en: "Choose a manufacturer" },
+  chooseProductLine: { vi: "Ch\u1ecdn d\u00f2ng s\u1ea3n ph\u1ea9m", en: "Choose a product line" },
+  productLines:  { vi: "d\u00f2ng s\u1ea3n ph\u1ea9m", en: "product lines" },
+  modelsTotal:   { vi: "model", en: "models" },
+  browseModels:  { vi: "Xem b\u1ea3ng th\u00f4ng s\u1ed1 \u0111\u1ea7y \u0111\u1ee7", en: "Browse full spec table" },
+  findByCap:     { vi: "T\u00ecm model theo y\u00eau c\u1ea7u", en: "Find model by requirement" },
+  refrigerant:   { vi: "M\u00f4i ch\u1ea5t l\u1ea1nh", en: "Refrigerant" },
+  requiredHeatRej:{ vi: "T\u1ed5ng nhi\u1ec7t th\u1ea3i y\u00eau c\u1ea7u (kW)", en: "Required heat rejection (kW)" },
+  condTemp:      { vi: "Nhi\u1ec7t \u0111\u1ed9 ng\u01b0ng t\u1ee5 (\u00b0C)", en: "Condensing temperature (\u00b0C)" },
+  wetBulbTemp:   { vi: "Nhi\u1ec7t \u0111\u1ed9 b\u1ea7u \u01b0\u1edbt kh\u00f4ng kh\u00ed (\u00b0C)", en: "Air inlet wet bulb temp (\u00b0C)" },
+  calculate:     { vi: "T\u00ednh & ch\u1ecdn model", en: "Calculate & select model" },
+  result:        { vi: "K\u1ebft qu\u1ea3", en: "Result" },
+  correctionFactor:{ vi: "H\u1ec7 s\u1ed1 hi\u1ec7u ch\u1ec9nh (n\u1ed9i suy)", en: "Correction factor (interpolated)" },
+  correctedLoad: { vi: "T\u1ea3i tr\u1ecdng hi\u1ec7u ch\u1ec9nh", en: "Corrected load" },
+  selectedModel: { vi: "Model \u0111\u1ec1 xu\u1ea5t", en: "Suggested model" },
+  outOfRange:    { vi: "\u26a0\ufe0f C\u1eb7p nhi\u1ec7t \u0111\u1ed9 n\u00e0y n\u1eb1m ngo\u00e0i (ho\u1eb7c kh\u00f4ng h\u1ee3p l\u1ec7 trong) b\u1ea3ng h\u1ec7 s\u1ed1 hi\u1ec7u ch\u1ec9nh c\u1ee7a catalogue \u2014 kh\u00f4ng th\u1ec3 n\u1ed9i suy tin c\u1eady. Vui l\u00f2ng ki\u1ec3m tra l\u1ea1i \u0111i\u1ec1u ki\u1ec7n \u0111\u1ea7u v\u00e0o.", en: "\u26a0\ufe0f This temperature pair is outside (or an invalid combination within) the catalogue's correction table \u2014 cannot interpolate reliably. Please check the input conditions." },
+  noModelFits:   { vi: "\u26a0\ufe0f Kh\u00f4ng c\u00f3 model \u0111\u01a1n n\u00e0o \u0111\u1ee7 c\u00f4ng su\u1ea5t \u2014 c\u1ea7n gh\u00e9p nhi\u1ec1u d\u00e0n ho\u1eb7c li\u00ean h\u1ec7 nh\u00e0 cung c\u1ea5p.", en: "\u26a0\ufe0f No single model has enough capacity \u2014 multiple units or manufacturer consultation needed." },
+  viewFullSpec:  { vi: "Xem th\u00f4ng s\u1ed1 \u0111\u1ea7y \u0111\u1ee7", en: "View full specification" },
+  selectionProcedure: { vi: "Quy tr\u00ecnh ch\u1ecdn model (theo catalogue)", en: "Model selection procedure (per catalogue)" },
+  usedGridPoints:{ vi: "\u0110i\u1ec3m l\u01b0\u1edbi d\u00f9ng \u0111\u1ec3 n\u1ed9i suy", en: "Grid points used for interpolation" },
+  moreSourcesNote:{ vi: "S\u1ebd b\u1ed5 sung th\u00eam ngu\u1ed3n d\u1eef li\u1ec7u kh\u00e1c sau.", en: "More data sources will be added later." },
+  model:         { vi: "Model", en: "Model" },
+  dims:          { vi: "K\u00edch th\u01b0\u1edbc (D\u00d7R\u00d7C, mm)", en: "Dimensions (LxWxH, mm)" },
+  shipWeight:    { vi: "Kh\u1ed1i l\u01b0\u1ee3ng \u0111\u00f3ng g\u00f3i (kg)", en: "Shipping weight (kg)" },
+  operWeight:    { vi: "Kh\u1ed1i l\u01b0\u1ee3ng ho\u1ea1t \u0111\u1ed9ng (kg)", en: "Operating weight (kg)" },
+  heatRejection: { vi: "Nhi\u1ec7t th\u1ea3i \u0111\u1ecbnh m\u1ee9c (kW)", en: "Nominal heat rejection (kW)" },
+  fan:           { vi: "Qu\u1ea1t", en: "Fan" },
+  pump:          { vi: "B\u01a1m tu\u1ea7n ho\u00e0n", en: "Circulating pump" },
+  ammonia:       { vi: "L\u01b0\u1ee3ng NH3 n\u1ea1p (kg)", en: "Ammonia charge (kg)" },
+  qty:           { vi: "SL", en: "Qty" },
+  airFlow:       { vi: "L\u01b0u l\u01b0\u1ee3ng gi\u00f3", en: "Air flow" },
+  power:         { vi: "C\u00f4ng su\u1ea5t", en: "Power" },
+  flow:          { vi: "L\u01b0u l\u01b0\u1ee3ng", en: "Flow" },
+  allModels:     { vi: "T\u1ea5t c\u1ea3 model", en: "All models" },
+  dataSourceNote:{ vi: "D\u1eef li\u1ec7u \u0111\u01b0\u1ee3c tr\u00edch t\u1eeb catalogue nh\u00e0 cung c\u1ea5p (xem file g\u1ed1c \u0111\u1ec3 \u0111\u1ed1i chi\u1ebfu khi c\u1ea7n).", en: "Data transcribed from the supplier's catalogue (cross-check the original file when precision matters)." },
+  designCondition:{ vi: "\u0110i\u1ec1u ki\u1ec7n thi\u1ebft k\u1ebf (c\u1ed1 \u0111\u1ecbnh)", en: "Design condition (fixed)" },
+  requiredFlow:  { vi: "L\u01b0u l\u01b0\u1ee3ng n\u01b0\u1edbc y\u00eau c\u1ea7u (m\u00b3/h)", en: "Required water flow (m\u00b3/h)" },
+  nominalFlow:   { vi: "L\u01b0u l\u01b0\u1ee3ng n\u01b0\u1edbc \u0111\u1ecbnh m\u1ee9c (m\u00b3/h)", en: "Nominal water flow (m\u00b3/h)" },
+  catalogueNotes:{ vi: "Ghi ch\u00fa t\u1eeb catalogue", en: "Catalogue notes" }
+};
+
+function t(key) { return (STR[key] && STR[key][LANG]) || key; }
+
+const REFRIG_LABELS = {
+  R717: "R717 (NH3)",
+  R404a: "R404a",
+  R22_R134A: "R22 / R134a"
+};
+
+// Original colored monogram badges per manufacturer (not the real
+// trademarked logos) so sources are visually distinguishable at a glance.
+const BRANDS = {
+  wxr:       { badge: "WXR", color: "#f5a623", name: "W.X.R\u00ae (Wanxiang Refrigeration)" },
+  hengan:    { badge: "HA",  color: "#ff6b4a", name: "Heng An Cooling" },
+  oceanblue: { badge: "OB",  color: "#3ecbe0", name: "OceanBlue (Yantai OceanBlue Refrigeration)" },
+  evapco:    { badge: "EVP", color: "#00a19a", name: "EVAPCO, Inc." }
+};
+const BRAND_ORDER = ["wxr", "hengan", "oceanblue", "evapco"];
+function brandKeyOf(src) {
+  const prefix = src.id.split("-")[0];
+  return BRANDS[prefix] ? prefix : "other";
+}
+function brandsInUse() {
+  const keys = Array.from(new Set(DATABASE.sources.map(brandKeyOf)));
+  keys.sort((a, b) => {
+    const ia = BRAND_ORDER.indexOf(a), ib = BRAND_ORDER.indexOf(b);
+    return (ia === -1 ? 999 : ia) - (ib === -1 ? 999 : ib);
+  });
+  return keys;
+}
+const KIND_ICON = { coolingtower: "\ud83d\uddfc\ufe0f", condenser: "\ud83c\udf00" };
+function brandOf(src) {
+  const prefix = src.id.split("-")[0];
+  return BRANDS[prefix] || { badge: "EQ", color: "#c9d1d9" };
+}
+function brandBadgeHtml(src, size) {
+  const b = brandOf(src);
+  const cls = size === "lg" ? "brand-badge lg" : "brand-badge";
+  return `<div class="${cls}" style="background:${b.color}">${b.badge}</div>`;
+}
+
+// ---------------------------------------------------------------------
+// Bilinear interpolation over an irregular-but-sorted 2D grid
+// table = { wetBulb: [numbers...], rows: [{condTemp, values[]}] }
+// Returns { value, corners:{c0,c1,w0,w1,v00,v01,v10,v11} } or null if
+// out of range / falls on an invalid (null) cell.
+// ---------------------------------------------------------------------
+function interpolate2D(table, condTemp, wetBulb) {
+  const rows = table.rows;
+  const cts = rows.map(r => r.condTemp);
+  const wbs = table.wetBulb;
+
+  if (condTemp < cts[0] || condTemp > cts[cts.length - 1]) return null;
+  if (wetBulb < wbs[0] || wetBulb > wbs[wbs.length - 1]) return null;
+
+  let riLow = 0, riHigh = 0;
+  const ctExactIdx = cts.indexOf(condTemp);
+  if (ctExactIdx !== -1) {
+    riLow = riHigh = ctExactIdx;
+  } else {
+    for (let i = 0; i < cts.length - 1; i++) {
+      if (cts[i] <= condTemp && condTemp <= cts[i + 1]) { riLow = i; riHigh = i + 1; break; }
+    }
+  }
+
+  let wiLow = 0, wiHigh = 0;
+  const wbExactIdx = wbs.indexOf(wetBulb);
+  if (wbExactIdx !== -1) {
+    wiLow = wiHigh = wbExactIdx;
+  } else {
+    for (let j = 0; j < wbs.length - 1; j++) {
+      if (wbs[j] <= wetBulb && wetBulb <= wbs[j + 1]) { wiLow = j; wiHigh = j + 1; break; }
+    }
+  }
+
+  const v00 = rows[riLow].values[wiLow];
+  const v01 = rows[riLow].values[wiHigh];
+  const v10 = rows[riHigh].values[wiLow];
+  const v11 = rows[riHigh].values[wiHigh];
+  if (v00 == null || v01 == null || v10 == null || v11 == null) return null;
+
+  const ct0 = cts[riLow], ct1 = cts[riHigh];
+  const wb0 = wbs[wiLow], wb1 = wbs[wiHigh];
+  const tc = ct1 === ct0 ? 0 : (condTemp - ct0) / (ct1 - ct0);
+  const tw = wb1 === wb0 ? 0 : (wetBulb - wb0) / (wb1 - wb0);
+
+  const vTop = v00 + (v01 - v00) * tw;
+  const vBot = v10 + (v11 - v10) * tw;
+  const value = vTop + (vBot - vTop) * tc;
+
+  return { value, corners: { ct0, ct1, wb0, wb1, v00, v01, v10, v11 } };
+}
+
+// ---------------------------------------------------------------------
+// Rendering
+// ---------------------------------------------------------------------
+const appEl = document.getElementById("app");
+
+function render(view) {
+  window.scrollTo(0, 0);
+  if (view.name === "home") return renderHome();
+  if (view.name === "brand") return renderBrand(view.brandId);
+  if (view.name === "source") return renderSource(view.sourceId);
+  if (view.name === "spec") return renderSpec(view.sourceId, view.model);
+}
+
+function renderHome() {
+  const brandKeys = brandsInUse();
+  const cards = brandKeys.map(key => {
+    const brand = BRANDS[key] || { badge: "EQ", color: "#c9d1d9", name: key };
+    const sources = DATABASE.sources.filter(s => brandKeyOf(s) === key);
+    const modelCount = sources.reduce((sum, s) => sum + s.models.length, 0);
+    const lineNames = sources.map(s => s.name[LANG]).join(", ");
+    return `
+      <button class="card source-card" data-brand="${key}">
+        <div class="brand-badge lg" style="background:${brand.color}">${brand.badge}</div>
+        <div class="card-body">
+          <div class="card-title-row">
+            <span class="card-title">${brand.name}</span>
+          </div>
+          <div class="card-sub">${sources.length} ${t("productLines")} \u00b7 ${modelCount} ${t("modelsTotal")}</div>
+          <div class="card-desc">${lineNames}</div>
+        </div>
+      </button>
+    `;
+  }).join("");
+
+  appEl.innerHTML = `
+    <h2>${t("chooseBrand")}</h2>
+    <div class="card-grid">${cards}</div>
+    <p class="muted">${t("moreSourcesNote")}</p>
+  `;
+
+  appEl.querySelectorAll(".source-card").forEach(el => {
+    el.addEventListener("click", () => render({ name: "brand", brandId: el.dataset.brand }));
+  });
+}
+
+function renderBrand(brandId) {
+  const brand = BRANDS[brandId] || { badge: "EQ", color: "#c9d1d9", name: brandId };
+  const sources = DATABASE.sources.filter(s => brandKeyOf(s) === brandId);
+  if (!sources.length) return renderHome();
+
+  const cards = sources.map(s => `
+    <button class="card source-card" data-source="${s.id}">
+      ${brandBadgeHtml(s)}
+      <div class="card-body">
+        <div class="card-title-row">
+          <span class="card-title">${s.name[LANG]}</span>
+          <span class="card-kind-icon">${KIND_ICON[s.kind] || ""}</span>
+        </div>
+        <div class="card-sub">${s.models.length} ${t("modelsTotal")}</div>
+        <div class="card-desc">${s.shortDesc[LANG]}</div>
+      </div>
+    </button>
+  `).join("");
+
+  appEl.innerHTML = `
+    <button class="back-btn">${t("back")}</button>
+    <div class="detail-header">
+      <div class="brand-badge lg" style="background:${brand.color}">${brand.badge}</div>
+      <div><h2 class="no-margin">${brand.name}</h2></div>
+    </div>
+    <h3>${t("chooseProductLine")}</h3>
+    <div class="card-grid">${cards}</div>
+  `;
+
+  appEl.querySelector(".back-btn").addEventListener("click", () => render({ name: "home" }));
+  appEl.querySelectorAll(".source-card").forEach(el => {
+    el.addEventListener("click", () => render({ name: "source", sourceId: el.dataset.source }));
+  });
+}
+
+function renderSource(sourceId) {
+  const src = DATABASE.sources.find(s => s.id === sourceId);
+  if (!src) return renderHome();
+
+  let html = `<button class="back-btn">${t("back")}</button>
+    <div class="detail-header">
+      ${brandBadgeHtml(src, "lg")}
+      <div>
+        <h2>${src.name[LANG]}</h2>
+        <p class="muted no-margin">${src.manufacturer}</p>
+      </div>
+    </div>`;
+
+  if (src.kind === "condenser") {
+    html += `
+      <div class="panel">
+        <h3>${t("selectionProcedure")}</h3>
+        <ol>${src.selectionProcedure[LANG].map(l => `<li>${l}</li>`).join("")}</ol>
+      </div>
+      <div class="panel">
+        <h3>${t("findByCap")}</h3>
+        <label>${t("refrigerant")}</label>
+        <select id="refrig">
+          ${Object.keys(src.correctionTables).map(k => `<option value="${k}">${REFRIG_LABELS[k] || k}</option>`).join("")}
+        </select>
+        <label>${t("requiredHeatRej")}</label>
+        <input type="number" id="reqLoad" min="0" step="1" placeholder="e.g. 940">
+        <label>${t("condTemp")}</label>
+        <input type="number" id="condTemp" step="0.1" placeholder="e.g. 36">
+        <label>${t("wetBulbTemp")}</label>
+        <input type="number" id="wetBulb" step="0.1" placeholder="e.g. 29">
+        <button class="primary-btn" id="calcCondBtn">${t("calculate")}</button>
+        <div id="condResult"></div>
+      </div>
+      <div class="panel">
+        <h3>${t("allModels")}</h3>
+        ${renderCondenserTable(src)}
+      </div>
+    `;
+  } else if (src.kind === "coolingtower") {
+    html += `
+      <div class="panel">
+        <h3>${t("designCondition")}</h3>
+        <p>${src.designCondition[LANG]}</p>
+      </div>
+      <div class="panel">
+        <h3>${t("findByCap")}</h3>
+        <label>${t("requiredFlow")}</label>
+        <input type="number" id="reqFlow" min="0" step="1" placeholder="e.g. 250">
+        <button class="primary-btn" id="calcTowerBtn">${t("calculate")}</button>
+        <div id="towerResult"></div>
+      </div>
+      <div class="panel">
+        <h3>${t("allModels")}</h3>
+        ${renderTowerTable(src)}
+      </div>
+      <div class="panel">
+        <h4>${t("catalogueNotes")}</h4>
+        <ul>${src.notes[LANG].map(l => `<li>${l}</li>`).join("")}</ul>
+      </div>
+    `;
+  }
+
+  html += `<p class="muted small">${t("dataSourceNote")}</p>`;
+  appEl.innerHTML = html;
+
+  appEl.querySelector(".back-btn").addEventListener("click", () => render({ name: "brand", brandId: brandKeyOf(src) }));
+
+  if (src.kind === "condenser") {
+    document.getElementById("calcCondBtn").addEventListener("click", () => calcCondenser(src));
+  } else if (src.kind === "coolingtower") {
+    document.getElementById("calcTowerBtn").addEventListener("click", () => calcTower(src));
+  }
+
+  appEl.querySelectorAll(".model-row").forEach(el => {
+    el.addEventListener("click", () => render({ name: "spec", sourceId: src.id, model: el.dataset.model }));
+  });
+}
+
+function renderCondenserTable(src) {
+  const rows = src.models.map(m => `
+    <tr class="model-row" data-model="${m.model}">
+      <td>${m.model}</td><td>${m.heatRejection}</td><td>${m.ammonia != null ? m.ammonia : "\u2014"}</td>
+      <td>${m.A}\u00d7${m.B}\u00d7${m.H}</td><td>${m.operWeight}</td>
+    </tr>`).join("");
+  return `
+    <div class="table-wrap"><table>
+      <thead><tr><th>${t("model")}</th><th>${t("heatRejection")}</th><th>NH3 (kg)</th><th>A\u00d7B\u00d7H (mm)</th><th>${t("operWeight")}</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table></div>`;
+}
+
+function renderTowerTable(src) {
+  const rows = src.models.map(m => `
+    <tr class="model-row" data-model="${m.model}">
+      <td>${m.model}</td><td>${m.flow != null ? m.flow : "\u2014"}</td>
+      <td>${m.A}\u00d7${m.B}\u00d7${m.H}</td><td>${m.operWeight}</td>
+    </tr>`).join("");
+  return `
+    <div class="table-wrap"><table>
+      <thead><tr><th>${t("model")}</th><th>${t("nominalFlow")}</th><th>${t("dims")}</th><th>${t("operWeight")}</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table></div>`;
+}
+
+function calcCondenser(src) {
+  const refrig = document.getElementById("refrig").value;
+  const load = parseFloat(document.getElementById("reqLoad").value);
+  const condT = parseFloat(document.getElementById("condTemp").value);
+  const wb = parseFloat(document.getElementById("wetBulb").value);
+  const resEl = document.getElementById("condResult");
+
+  if (!load || load <= 0 || isNaN(condT) || isNaN(wb)) { resEl.innerHTML = ""; return; }
+
+  const table = src.correctionTables[refrig];
+  const interp = interpolate2D(table, condT, wb);
+
+  if (!interp) {
+    resEl.innerHTML = `<div class="result-box warn">${t("outOfRange")}</div>`;
+    return;
+  }
+
+  const factor = interp.value;
+  const corrected = load * factor;
+  const sorted = [...src.models].sort((a, b) => a.heatRejection - b.heatRejection);
+  const fit = sorted.find(m => m.heatRejection >= corrected);
+
+  const c = interp.corners;
+  const gridNote = `${t("usedGridPoints")}: (${c.ct0}\u00b0C,${c.wb0}\u00b0C)=${c.v00} \u00b7 (${c.ct0}\u00b0C,${c.wb1}\u00b0C)=${c.v01} \u00b7 (${c.ct1}\u00b0C,${c.wb0}\u00b0C)=${c.v10} \u00b7 (${c.ct1}\u00b0C,${c.wb1}\u00b0C)=${c.v11}`;
+
+  let modelHtml;
+  if (!fit) {
+    modelHtml = `<div class="result-box warn">${t("noModelFits")}</div>`;
+  } else {
+    modelHtml = `
+      <div class="result-box ok">
+        <div><strong>${t("selectedModel")}:</strong> ${fit.model}</div>
+        <div>${t("heatRejection")}: ${fit.heatRejection} kW</div>
+        <button class="link-btn" id="viewSpecBtn">${t("viewFullSpec")} \u2192</button>
+      </div>`;
+  }
+
+  resEl.innerHTML = `
+    <div class="result-box info">
+      <div>${t("correctionFactor")}: <strong>${factor.toFixed(3)}</strong></div>
+      <div class="tiny muted">${gridNote}</div>
+      <div>${t("correctedLoad")}: <strong>${corrected.toFixed(1)} kW</strong> (${load} \u00d7 ${factor.toFixed(3)})</div>
+    </div>
+    ${modelHtml}
+  `;
+  const btn = document.getElementById("viewSpecBtn");
+  if (btn) btn.addEventListener("click", () => render({ name: "spec", sourceId: src.id, model: fit.model }));
+}
+
+function calcTower(src) {
+  const req = parseFloat(document.getElementById("reqFlow").value);
+  const resEl = document.getElementById("towerResult");
+  if (!req || req <= 0) { resEl.innerHTML = ""; return; }
+
+  const sorted = [...src.models].sort((a, b) => a.flow - b.flow);
+  const fit = sorted.find(m => m.flow >= req);
+
+  if (!fit) {
+    resEl.innerHTML = `<div class="result-box warn">${t("noModelFits")}</div>`;
+    return;
+  }
+  resEl.innerHTML = `
+    <div class="result-box ok">
+      <div><strong>${t("selectedModel")}:</strong> ${fit.model}</div>
+      <div>${t("nominalFlow")}: ${fit.flow} m\u00b3/h</div>
+      <div>${t("dims")}: ${fit.A}\u00d7${fit.B}\u00d7${fit.H} mm</div>
+      <div>${t("operWeight")}: ${fit.operWeight} kg</div>
+      <button class="link-btn" id="viewSpecBtn">${t("viewFullSpec")} \u2192</button>
+    </div>`;
+  document.getElementById("viewSpecBtn").addEventListener("click", () =>
+    render({ name: "spec", sourceId: src.id, model: fit.model }));
+}
+
+function specRow(label, value) {
+  return `<div class="spec-row"><div class="spec-label">${label}</div><div class="spec-value">${value}</div></div>`;
+}
+function specGrid(rowsHtml) {
+  return `<div class="spec-grid">${rowsHtml.join("")}</div>`;
+}
+
+function renderSpec(sourceId, modelName) {
+  const src = DATABASE.sources.find(s => s.id === sourceId);
+  const m = src.models.find(mm => mm.model === modelName);
+  let html = `<button class="back-btn">${t("back")}</button>
+    <div class="detail-header">
+      ${brandBadgeHtml(src, "lg")}
+      <div>
+        <h2 class="no-margin">${m.model}</h2>
+        <p class="muted no-margin">${src.name[LANG]}</p>
+      </div>
+    </div>`;
+
+  if (src.kind === "condenser") {
+    const rows = [
+      specRow(t("heatRejection"), `${m.heatRejection} kW`),
+      specRow(t("fan"), `${t("qty")} ${m.fanQty} \u00d7 ${t("airFlow")} ${m.fanAirFlow} m\u00b3/h, ${t("power")} ${m.fanPower} kW`),
+      specRow(t("pump"), `${t("qty")} ${m.pumpQty || 1} \u00d7 ${t("flow")} ${m.pumpFlow} m\u00b3/h, ${t("power")} ${m.pumpPower} kW`)
+    ];
+    if (m.ammonia != null) rows.push(specRow(t("ammonia"), `${m.ammonia} kg`));
+    if (m.pipeDN) rows.push(specRow("DN", m.pipeDN));
+    rows.push(specRow(t("dims"), `${m.A}\u00d7${m.B}\u00d7${m.H} mm`));
+    rows.push(specRow(t("shipWeight"), `${m.shipWeight} kg`));
+    rows.push(specRow(t("operWeight"), `${m.operWeight} kg`));
+    html += `<div class="panel nameplate">
+      <span class="rivet tl"></span><span class="rivet tr"></span><span class="rivet bl"></span><span class="rivet br"></span>
+      ${specGrid(rows)}
+    </div>`;
+  } else if (src.kind === "coolingtower") {
+    html += `<div class="panel nameplate">
+      <span class="rivet tl"></span><span class="rivet tr"></span><span class="rivet bl"></span><span class="rivet br"></span>
+      ${specGrid([
+      specRow(t("nominalFlow"), m.flow != null ? `${m.flow} m\u00b3/h` : "\u2014"),
+      specRow(t("fan"), `${t("qty")} ${m.fanQty} \u00d7 ${t("airFlow")} ${m.fanAirFlow} m\u00b3/h, ${t("power")} ${m.fanPower} kW`),
+      specRow(t("pump"), `${t("qty")} ${m.pumpQty || 1} \u00d7 ${t("flow")} ${m.pumpFlow} m\u00b3/h, ${t("power")} ${m.pumpPower} kW`),
+      specRow(t("dims"), `${m.A}\u00d7${m.B}\u00d7${m.H} mm`),
+      specRow(t("shipWeight"), `${m.shipWeight} kg`),
+      specRow(t("operWeight"), `${m.operWeight} kg`)
+    ])}
+      <h4>${t("designCondition")}</h4>
+      <p>${src.designCondition[LANG]}</p>
+    </div>`;
+  }
+  appEl.innerHTML = html;
+  appEl.querySelector(".back-btn").addEventListener("click", () => render({ name: "source", sourceId }));
+}
+
+// ---------------------------------------------------------------------
+// Language toggle & init
+// ---------------------------------------------------------------------
+function refreshLangUI() {
+  document.getElementById("langToggle").textContent = LANG === "vi" ? "EN" : "VI";
+  document.getElementById("appTitle").textContent = t("appTitle");
+}
+
+document.getElementById("langToggle").addEventListener("click", () => {
+  LANG = LANG === "vi" ? "en" : "vi";
+  localStorage.setItem("lang", LANG);
+  refreshLangUI();
+  render(currentView);
+});
+
+let currentView = { name: "home" };
+const origRender = render;
+render = function (view) { currentView = view; origRender(view); };
+
+refreshLangUI();
+render({ name: "home" });
+
+document.getElementById("buildVersion").textContent = "build " + BUILD_VERSION;
+
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("sw.js").catch(err => console.error("SW register failed", err));
+  });
+}

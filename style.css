@@ -1,0 +1,353 @@
+/* ============================================================
+   INDUSTRIAL EQUIPMENT-TAG THEME
+   Dark steel palette, amber hazard accent, monospace for all
+   technical readouts (capacities, dims, weights) — like the
+   stamped rating plate on real refrigeration equipment.
+   ============================================================ */
+
+:root {
+  --bg: #14171a;
+  --panel: #1c2023;
+  --panel-alt: #22272b;
+  --border: #363c42;
+  --border-strong: #4a5158;
+  --text: #eef1f3;
+  --muted: #8e969e;
+  --accent: #f5a623;      /* industrial hazard amber */
+  --accent-dark: #c9820f;
+  --ok-bg: #12271c;
+  --ok-border: #2fbf71;
+  --ok-text: #7be3ab;
+  --warn-bg: #2a1414;
+  --warn-border: #e5484d;
+  --warn-text: #ff9d9f;
+  --info-bg: #0f2530;
+  --info-border: #2bb7d6;
+  --info-text: #7fdcef;
+  --mono: ui-monospace, "SFMono-Regular", Menlo, Consolas, "Liberation Mono", monospace;
+  --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: var(--sans);
+  background: var(--bg);
+  color: var(--text);
+  padding-bottom: 40px;
+}
+
+.top-bar {
+  background: #0d0f11;
+  color: var(--text);
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  border-bottom: 1px solid var(--border);
+}
+
+/* Hazard stripe: the one deliberate "loud" motif in the whole app,
+   used once to anchor the industrial identity. */
+.hazard-strip {
+  height: 5px;
+  background: repeating-linear-gradient(
+    45deg,
+    var(--accent), var(--accent) 10px,
+    #0d0f11 10px, #0d0f11 20px
+  );
+  position: sticky;
+  top: 68px;
+  z-index: 9;
+}
+
+.brand { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 1.02rem; text-transform: uppercase; letter-spacing: 0.04em; }
+.brand-mark {
+  background: var(--accent);
+  color: #1a1300;
+  border-radius: 4px;
+  padding: 3px 9px;
+  font-size: 0.85rem;
+  font-weight: 900;
+  letter-spacing: 0.5px;
+}
+
+.lang-btn {
+  background: transparent;
+  color: var(--text);
+  border: 1.5px solid var(--border-strong);
+  border-radius: 4px;
+  padding: 6px 12px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: var(--mono);
+  letter-spacing: 0.05em;
+}
+.lang-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+#app { max-width: 780px; margin: 0 auto; padding: 16px; }
+
+h2 {
+  color: var(--text);
+  margin-top: 4px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  font-size: 1.25rem;
+}
+h3 {
+  color: var(--accent);
+  margin-bottom: 8px;
+  font-size: 0.82rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 6px;
+}
+h4 {
+  margin-bottom: 6px;
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.muted { color: var(--muted); font-size: 0.9rem; }
+.small { font-size: 0.78rem; }
+.tiny { font-size: 0.72rem; font-family: var(--mono); }
+
+.card-grid { display: grid; grid-template-columns: 1fr; gap: 10px; }
+
+.card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--border-strong);
+  border-radius: 6px;
+  padding: 14px;
+  text-align: left;
+  cursor: pointer;
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  transition: border-color 0.15s, background 0.15s;
+}
+.card:hover { border-left-color: var(--accent); background: var(--panel-alt); }
+.card-body { min-width: 0; flex: 1; }
+.card-title-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.card-kind-icon { font-size: 1.1rem; flex-shrink: 0; }
+.card-title { font-weight: 800; color: var(--text); text-transform: uppercase; letter-spacing: 0.01em; font-size: 0.98rem; }
+.card-sub { font-size: 0.74rem; color: var(--muted); margin: 3px 0; font-family: var(--mono); }
+.card-desc {
+  font-size: 0.85rem;
+  margin-top: 5px;
+  color: #c4cad0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.brand-badge {
+  flex-shrink: 0;
+  color: #0d0f11;
+  font-weight: 900;
+  font-size: 0.72rem;
+  letter-spacing: 0.3px;
+  border-radius: 4px;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  line-height: 1.05;
+  font-family: var(--mono);
+}
+.brand-badge.lg { width: 54px; height: 54px; font-size: 0.8rem; border-radius: 5px; }
+
+.detail-header { display: flex; align-items: center; gap: 12px; margin-bottom: 4px; }
+.no-margin { margin: 0; }
+
+.back-btn {
+  background: none;
+  border: none;
+  color: var(--accent);
+  font-weight: 700;
+  cursor: pointer;
+  padding: 6px 0;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+label {
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 800;
+  margin: 12px 0 5px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+select, input[type="number"] {
+  width: 100%;
+  padding: 11px;
+  border: 1.5px solid var(--border-strong);
+  border-radius: 4px;
+  font-size: 1rem;
+  background: #0f1214;
+  color: var(--text);
+  font-family: var(--mono);
+}
+select:focus, input[type="number"]:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.primary-btn {
+  margin-top: 14px;
+  width: 100%;
+  background: var(--accent);
+  color: #1a1300;
+  border: none;
+  padding: 13px;
+  border-radius: 4px;
+  font-weight: 800;
+  font-size: 0.92rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+}
+.primary-btn:hover { background: var(--accent-dark); }
+
+.link-btn {
+  margin-top: 10px;
+  background: none;
+  border: none;
+  color: var(--accent);
+  font-weight: 800;
+  cursor: pointer;
+  padding: 0;
+  text-transform: uppercase;
+  font-size: 0.82rem;
+  letter-spacing: 0.04em;
+}
+
+.result-box {
+  margin-top: 12px;
+  padding: 13px;
+  border-radius: 4px;
+  border-left: 4px solid;
+}
+.result-box.ok { background: var(--ok-bg); border-color: var(--ok-border); color: var(--ok-text); }
+.result-box.warn { background: var(--warn-bg); border-color: var(--warn-border); color: var(--warn-text); }
+.result-box.info { background: var(--info-bg); border-color: var(--info-border); color: var(--info-text); }
+.result-box strong { font-family: var(--mono); font-size: 1.15rem; }
+.result-box.ok div:first-child strong { font-size: 1.3rem; }
+
+.table-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: 6px; }
+table { width: 100%; border-collapse: collapse; font-size: 0.82rem; font-family: var(--mono); }
+th, td { padding: 9px 11px; text-align: left; border-bottom: 1px solid var(--border); white-space: nowrap; }
+thead th {
+  color: var(--accent);
+  background: #0f1214;
+  position: sticky;
+  top: 0;
+  font-family: var(--sans);
+  text-transform: uppercase;
+  font-size: 0.68rem;
+  letter-spacing: 0.05em;
+}
+tbody tr.model-row { cursor: pointer; color: var(--text); }
+tbody tr.model-row:hover { background: var(--panel-alt); }
+tbody tr.model-row td:first-child { color: var(--accent); font-weight: 700; }
+
+ul, ol { padding-left: 20px; margin: 6px 0; }
+li { margin-bottom: 5px; font-size: 0.88rem; color: #c4cad0; }
+
+.foot {
+  text-align: center;
+  color: var(--muted);
+  font-size: 0.7rem;
+  font-family: var(--mono);
+  padding: 20px 0 10px;
+}
+
+/* ------------------------------------------------------------
+   Detail spec view — wrapping label/value rows (never overflows),
+   sized by importance: the value is the answer, the label is
+   reference context.
+   ------------------------------------------------------------ */
+.spec-grid { display: flex; flex-direction: column; }
+.spec-row {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 11px 0;
+  border-bottom: 1px solid var(--border);
+}
+.spec-row:last-child { border-bottom: none; }
+.spec-label {
+  font-size: 0.68rem;
+  color: var(--muted);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.spec-value {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--text);
+  word-break: break-word;
+  font-family: var(--mono);
+}
+
+/* ------------------------------------------------------------
+   Nameplate signature: the model detail page's main spec panel
+   is styled like a stamped equipment rating plate — the one
+   deliberate flourish in the app, reserved for the "answer".
+   ------------------------------------------------------------ */
+.nameplate {
+  position: relative;
+  border: 1px solid var(--border-strong);
+  background:
+    linear-gradient(180deg, var(--panel-alt), var(--panel) 40px);
+  padding: 26px 18px 16px;
+}
+.nameplate::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 4px;
+  background: repeating-linear-gradient(
+    45deg,
+    var(--accent), var(--accent) 8px,
+    #0d0f11 8px, #0d0f11 16px
+  );
+}
+.rivet {
+  position: absolute;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #4a5158;
+  box-shadow: inset 0 1px 1px rgba(255,255,255,0.15), 0 1px 2px rgba(0,0,0,0.6);
+}
+.rivet.tl { top: 12px; left: 10px; }
+.rivet.tr { top: 12px; right: 10px; }
+.rivet.bl { bottom: 10px; left: 10px; }
+.rivet.br { bottom: 10px; right: 10px; }
