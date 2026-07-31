@@ -179,6 +179,40 @@ const ATCE_CORRECTION_R717 = {
   ]
 };
 
+
+// Baltimore Aircoil (BAC) VXC correction tables (Table 2A/2B, Bulletin
+// D117/3-7 D). Validated exactly against the bulletin's own worked
+// example (R717, 950kW, 35C cond / 22C wet bulb -> factor 1.13 ->
+// corrected 1074kW -> VXC-250, reproduces exactly).
+const BAC_VXC_CORRECTION_R22_R134A = {
+  wetBulb: [10,12,14,16,18,19,20,21,22,24,26,28],
+  rows: [
+    { condTemp: 29, values: [1.12,1.21,1.33,1.48,1.69,1.83,2.00,2.21,2.49,3.36,null,null] },
+    { condTemp: 31, values: [0.99,1.06,1.15,1.26,1.41,1.50,1.61,1.74,1.90,2.36,3.19,null] },
+    { condTemp: 33, values: [0.89,0.94,1.01,1.09,1.20,1.26,1.34,1.43,1.53,1.81,2.25,3.04] },
+    { condTemp: 35, values: [0.80,0.85,0.90,0.96,1.04,1.09,1.14,1.20,1.27,1.46,1.72,2.14] },
+    { condTemp: 37, values: [0.73,0.76,0.81,0.86,0.92,0.95,0.99,1.04,1.09,1.21,1.39,1.64] },
+    { condTemp: 39, values: [0.67,0.69,0.73,0.77,0.82,0.84,0.87,0.91,0.94,1.04,1.16,1.32] },
+    { condTemp: 41, values: [0.61,0.64,0.66,0.69,0.73,0.75,0.78,0.80,0.83,0.90,0.99,1.10] },
+    { condTemp: 43, values: [0.56,0.58,0.61,0.63,0.66,0.68,0.70,0.72,0.74,0.79,0.86,0.94] },
+    { condTemp: 45, values: [0.52,0.54,0.56,0.58,0.60,0.62,0.63,0.65,0.67,0.71,0.76,0.82] }
+  ]
+};
+const BAC_VXC_CORRECTION_R717 = {
+  wetBulb: [10,12,14,16,18,19,20,21,22,24,26,28],
+  rows: [
+    { condTemp: 29, values: [0.99,1.08,1.18,1.32,1.51,1.63,1.78,1.97,2.21,2.99,null,null] },
+    { condTemp: 31, values: [0.88,0.94,1.02,1.12,1.25,1.34,1.43,1.55,1.69,2.10,2.84,null] },
+    { condTemp: 33, values: [0.79,0.84,0.90,0.97,1.07,1.13,1.19,1.27,1.36,1.61,2.00,2.70] },
+    { condTemp: 35, values: [0.71,0.75,0.80,0.86,0.93,0.97,1.02,1.07,1.13,1.30,1.53,1.90] },
+    { condTemp: 37, values: [0.65,0.68,0.72,0.76,0.82,0.85,0.88,0.92,0.97,1.08,1.23,1.46] },
+    { condTemp: 39, values: [0.59,0.62,0.65,0.68,0.73,0.75,0.78,0.81,0.84,0.92,1.03,1.18] },
+    { condTemp: 41, values: [0.54,0.57,0.59,0.62,0.65,0.67,0.69,0.72,0.74,0.80,0.88,0.98] },
+    { condTemp: 43, values: [0.50,0.52,0.54,0.56,0.59,0.61,0.62,0.64,0.66,0.71,0.77,0.84] },
+    { condTemp: 45, values: [0.47,0.48,0.50,0.52,0.54,0.55,0.56,0.58,0.59,0.63,0.68,0.73] }
+  ]
+};
+
 const DATABASE = {
   sources: [
     // ------------------------------------------------------------------
@@ -1181,7 +1215,411 @@ const DATABASE = {
         { model: "ATC-XC1340E-1g", heatRejection: 5772, fanQty: 2, fanAirFlow: 191880, fanPower: 30, pumpQty: 2, pumpFlow: 635.76, pumpPower: 7.5, pipeDN: "(2×) 350mm", ammonia: 652, shipWeight: 23970, operWeight: 31635, A: 11036, B: 2991, H: 5064 }
       ],
       correctionTables: { R717: ATCE_CORRECTION_R717, R22_R134A: ATCE_CORRECTION_R22_R134A }
-    }
+    },
+    // ------------------------------------------------------------------
+    // SOURCE: BAC (Baltimore Aircoil) CXV Evaporative Condenser
+    // From: BAC_CXV-1.pdf (Baltimore Aircoil Australia, Technical Data,
+    // Bulletin MAR305-0)
+    // NOTE: unlike BAC's own VXC bulletin, this AU CXV bulletin does not
+    // publish a heat-rejection correction table (condensing temp / wet
+    // bulb temp) -- only a single "Base Heat Rejection" rating per model.
+    // Selection here is therefore a direct lookup against that base
+    // rating, with no correction step. Flagged to user: if the actual
+    // design condensing temperature / wet bulb differs materially from
+    // BAC's standard ammonia rating point, check with a BAC rep or the
+    // VXC-style correction procedure before finalizing a model.
+    // Dimensions: A/B = unit plan width/length (mm) from the catalogue's
+    // Structural Support table (grouped by model range); H = the "F" (mm)
+    // dimension from the technical-data table (height to the refrigerant
+    // connection shown in the general arrangement drawing) -- this is
+    // the only per-model vertical reference published in this bulletin,
+    // not a full overall unit height. Catalogue itself states "Do not
+    // use for construction, refer to factory certified dimensions."
+    // ------------------------------------------------------------------
+    {
+      id: "bac-cxv",
+      kind: "condenser",
+      manufacturer: "Baltimore Aircoil (BAC) Australia",
+      name: { vi: "D\u00e0n ng\u01b0ng bay h\u01a1i BAC CXV", en: "BAC CXV Evaporative Condenser" },
+      shortDesc: {
+        vi: "D\u00e0n ng\u01b0ng bay h\u01a1i h\u00fat gi\u00f3 c\u01b0\u1ee1ng b\u1ee9c c\u1ee7a Baltimore Aircoil, d\u00f9ng cho h\u1ec7 NH3 (R-717). Ch\u1ecdn model tr\u1ef1c ti\u1ebfp theo c\u00f4ng su\u1ea5t nhi\u1ec7t th\u1ea3i c\u01a1 b\u1ea3n \u2014 t\u00e0i li\u1ec7u n\u00e0y kh\u00f4ng c\u00f3 b\u1ea3ng h\u1ec7 s\u1ed1 hi\u1ec7u ch\u1ec9nh theo nhi\u1ec7t \u0111\u1ed9 ng\u01b0ng t\u1ee5/b\u1ea7u \u01b0\u1edbt.",
+        en: "Induced-draft evaporative condenser from Baltimore Aircoil, for R-717 (ammonia) systems. Model is selected directly against the published base heat rejection -- this bulletin does not include a condensing/wet-bulb correction table."
+      },
+      selectionProcedure: {
+        vi: [
+          "T\u00ednh t\u1ed5ng nhi\u1ec7t th\u1ea3i c\u1ea7n gi\u1ea3i (kW) qua d\u00e0n ng\u01b0ng.",
+          "Tra b\u1ea3ng th\u00f4ng s\u1ed1 k\u1ef9 thu\u1eadt (Base Heat Rejection) v\u00e0 ch\u1ecdn model c\u00f3 c\u00f4ng su\u1ea5t \u0111\u1ecbnh m\u1ee9c b\u1eb1ng ho\u1eb7c l\u1edbn h\u01a1n g\u1ea7n nh\u1ea5t.",
+          "L\u01b0u \u00fd: t\u00e0i li\u1ec7u n\u00e0y kh\u00f4ng cung c\u1ea5p h\u1ec7 s\u1ed1 hi\u1ec7u ch\u1ec9nh theo \u0111i\u1ec1u ki\u1ec7n ng\u01b0ng t\u1ee5/b\u1ea7u \u01b0\u1edbt kh\u00e1c ti\u00eau chu\u1ea9n; li\u00ean h\u1ec7 BAC \u0111\u1ec3 x\u00e1c nh\u1eadn n\u1ebfu \u0111i\u1ec1u ki\u1ec7n thi\u1ebft k\u1ebf kh\u00e1c bi\u1ec7t \u0111\u00e1ng k\u1ec3."
+        ],
+        en: [
+          "Calculate the total heat rejection load (kW) through the condenser.",
+          "Refer to the technical data table (Base Heat Rejection) and select the smallest model with a rating equal to or greater than that load.",
+          "Note: this bulletin does not provide a correction factor for other condensing/wet-bulb conditions; confirm with a BAC representative if the design condition differs materially from standard."
+        ]
+      },
+      // model, base heat rejection (kW), fan qty/power (kW; string when unit uses two different-sized fans),
+      // pump flow (m3/h) [converted from l/s], pump power (kW), R-717 charge (kg), drain size (mm),
+      // shipping weight (kg), operating weight (kg), dims A(width mm)/B(length mm) from Structural Support
+      // table, H = "F" dimension (mm, height to refrigerant connection) from the technical data table
+      models: [
+        { model: "CXV 74", heatRejection: 319, fanQty: 1, fanAirFlow: 45000, fanPower: 4.0, pumpFlow: 43.2, pumpPower: 1.1, ammonia: 30, pipeDN: "150mm", shipWeight: 2350, operWeight: 3400, A: 2385, B: 1860, H: 845 },
+        { model: "CXV 80", heatRejection: 345, fanQty: 1, fanAirFlow: 51480, fanPower: 5.5, pumpFlow: 43.2, pumpPower: 1.1, ammonia: 30, pipeDN: "150mm", shipWeight: 2370, operWeight: 3410, A: 2385, B: 1860, H: 845 },
+        { model: "CXV 84", heatRejection: 362, fanQty: 1, fanAirFlow: 56520, fanPower: 7.5, pumpFlow: 43.2, pumpPower: 1.1, ammonia: 30, pipeDN: "150mm", shipWeight: 2370, operWeight: 3420, A: 2385, B: 1860, H: 845 },
+        { model: "CXV 89", heatRejection: 383, fanQty: 1, fanAirFlow: 50040, fanPower: 5.5, pumpFlow: 43.2, pumpPower: 1.1, ammonia: 38, pipeDN: "150mm", shipWeight: 2520, operWeight: 3590, A: 2385, B: 1860, H: 1080 },
+        { model: "CXV 93", heatRejection: 401, fanQty: 1, fanAirFlow: 55080, fanPower: 7.5, pumpFlow: 43.2, pumpPower: 1.1, ammonia: 38, pipeDN: "150mm", shipWeight: 2530, operWeight: 3600, A: 2385, B: 1860, H: 1080 },
+        { model: "CXV 117", heatRejection: 505, fanQty: 1, fanAirFlow: 72000, fanPower: 5.5, pumpFlow: 64.8, pumpPower: 1.5, ammonia: 46, pipeDN: "150mm", shipWeight: 3370, operWeight: 4980, A: 2385, B: 2775, H: 845 },
+        { model: "CXV 123", heatRejection: 530, fanQty: 1, fanAirFlow: 79200, fanPower: 7.5, pumpFlow: 64.8, pumpPower: 1.5, ammonia: 46, pipeDN: "150mm", shipWeight: 3390, operWeight: 4980, A: 2385, B: 2775, H: 845 },
+        { model: "CXV 131", heatRejection: 564, fanQty: 1, fanAirFlow: 90360, fanPower: 11.0, pumpFlow: 64.8, pumpPower: 1.5, ammonia: 46, pipeDN: "150mm", shipWeight: 3410, operWeight: 5000, A: 2385, B: 2775, H: 845 },
+        { model: "CXV 137", heatRejection: 589, fanQty: 1, fanAirFlow: 77040, fanPower: 7.5, pumpFlow: 64.8, pumpPower: 1.5, ammonia: 57, pipeDN: "150mm", shipWeight: 3610, operWeight: 5240, A: 2385, B: 2775, H: 1080 },
+        { model: "CXV 147", heatRejection: 632, fanQty: 1, fanAirFlow: 88200, fanPower: 11.0, pumpFlow: 64.8, pumpPower: 1.5, ammonia: 57, pipeDN: "150mm", shipWeight: 3640, operWeight: 5260, A: 2385, B: 2775, H: 1080 },
+        { model: "CXV 153", heatRejection: 661, fanQty: 1, fanAirFlow: 92160, fanPower: 7.5, pumpFlow: 113.4, pumpPower: 2.2, ammonia: 61, pipeDN: "200mm", shipWeight: 4150, operWeight: 6290, A: 2385, B: 3690, H: 845 },
+        { model: "CXV 164", heatRejection: 706, fanQty: 1, fanAirFlow: 105120, fanPower: 11.0, pumpFlow: 113.4, pumpPower: 2.2, ammonia: 61, pipeDN: "200mm", shipWeight: 4180, operWeight: 6310, A: 2385, B: 3690, H: 845 },
+        { model: "CXV 173", heatRejection: 744, fanQty: 1, fanAirFlow: 115560, fanPower: 15.0, pumpFlow: 113.4, pumpPower: 2.2, ammonia: 61, pipeDN: "200mm", shipWeight: 4190, operWeight: 6320, A: 2385, B: 3690, H: 845 },
+        { model: "CXV 184", heatRejection: 795, fanQty: 1, fanAirFlow: 102960, fanPower: 11.0, pumpFlow: 113.4, pumpPower: 2.2, ammonia: 76, pipeDN: "200mm", shipWeight: 4480, operWeight: 6650, A: 2385, B: 3690, H: 1080 },
+        { model: "CXV 193", heatRejection: 832, fanQty: 1, fanAirFlow: 113040, fanPower: 15.0, pumpFlow: 113.4, pumpPower: 2.2, ammonia: 76, pipeDN: "200mm", shipWeight: 4490, operWeight: 6660, A: 2385, B: 3690, H: 1080 },
+        { model: "CXV 207", heatRejection: 892, fanQty: 1, fanAirFlow: 136800, fanPower: 18.5, pumpFlow: 136.8, pumpPower: 3.0, ammonia: 69, pipeDN: "200mm", shipWeight: 4560, operWeight: 6970, A: 2985, B: 3690, H: 610 },
+        { model: "CXV 214", heatRejection: 918, fanQty: 1, fanAirFlow: 145440, fanPower: 22.0, pumpFlow: 136.8, pumpPower: 3.0, ammonia: 69, pipeDN: "200mm", shipWeight: 4570, operWeight: 6980, A: 2985, B: 3690, H: 610 },
+        { model: "CXV 229", heatRejection: 987, fanQty: 1, fanAirFlow: 114120, fanPower: 11.0, pumpFlow: 136.8, pumpPower: 3.0, ammonia: 91, pipeDN: "200mm", shipWeight: 4970, operWeight: 7450, A: 2985, B: 3690, H: 845 },
+        { model: "CXV 241", heatRejection: 1034, fanQty: 1, fanAirFlow: 125640, fanPower: 15.0, pumpFlow: 136.8, pumpPower: 3.0, ammonia: 91, pipeDN: "200mm", shipWeight: 4970, operWeight: 7450, A: 2985, B: 3690, H: 845 },
+        { model: "CXV 253", heatRejection: 1086, fanQty: 1, fanAirFlow: 135360, fanPower: 18.5, pumpFlow: 136.8, pumpPower: 3.0, ammonia: 91, pipeDN: "200mm", shipWeight: 5000, operWeight: 7480, A: 2985, B: 3690, H: 845 },
+        { model: "CXV 258", heatRejection: 1112, fanQty: 1, fanAirFlow: 143640, fanPower: 22.0, pumpFlow: 136.8, pumpPower: 3.0, ammonia: 91, pipeDN: "200mm", shipWeight: 5010, operWeight: 7490, A: 2985, B: 3690, H: 845 },
+        { model: "CXV 269", heatRejection: 1159, fanQty: 1, fanAirFlow: 122040, fanPower: 15.0, pumpFlow: 136.8, pumpPower: 3.0, ammonia: 114, pipeDN: "200mm", shipWeight: 5410, operWeight: 7950, A: 2985, B: 3690, H: 1080 },
+        { model: "CXV 280", heatRejection: 1202, fanQty: 1, fanAirFlow: 131400, fanPower: 18.5, pumpFlow: 136.8, pumpPower: 3.0, ammonia: 114, pipeDN: "200mm", shipWeight: 5440, operWeight: 7980, A: 2985, B: 3690, H: 1080 },
+        { model: "CXV 288", heatRejection: 1241, fanQty: 1, fanAirFlow: 139680, fanPower: 22.0, pumpFlow: 136.8, pumpPower: 3.0, ammonia: 114, pipeDN: "200mm", shipWeight: 5450, operWeight: 7990, A: 2985, B: 3690, H: 1080 },
+        { model: "CXV 296", heatRejection: 1275, fanQty: 1, fanAirFlow: 137160, fanPower: 22.0, pumpFlow: 136.8, pumpPower: 3.0, ammonia: 136, pipeDN: "200mm", shipWeight: 5890, operWeight: 8500, A: 2985, B: 3690, H: 1314 },
+        { model: "CXV 338", heatRejection: 1452, fanQty: 2, fanAirFlow: 172440, fanPower: "11 & 5.5", pumpFlow: 187.2, pumpPower: 5.5, ammonia: 136, pipeDN: "200mm", shipWeight: 7070, operWeight: 10810, A: 2985, B: 5520, H: 845 },
+        { model: "CXV 354", heatRejection: 1525, fanQty: 2, fanAirFlow: 189720, fanPower: "15 & 7.5", pumpFlow: 187.2, pumpPower: 5.5, ammonia: 136, pipeDN: "200mm", shipWeight: 7090, operWeight: 10820, A: 2985, B: 5520, H: 845 },
+        { model: "CXV 369", heatRejection: 1585, fanQty: 2, fanAirFlow: 204120, fanPower: "18.5 & 11", pumpFlow: 187.2, pumpPower: 5.5, ammonia: 136, pipeDN: "200mm", shipWeight: 7140, operWeight: 10870, A: 2985, B: 5520, H: 845 },
+        { model: "CXV 379", heatRejection: 1633, fanQty: 2, fanAirFlow: 217080, fanPower: "22 & 11", pumpFlow: 187.2, pumpPower: 5.5, ammonia: 136, pipeDN: "200mm", shipWeight: 7150, operWeight: 10880, A: 2985, B: 5520, H: 845 },
+        { model: "CXV 396", heatRejection: 1702, fanQty: 2, fanAirFlow: 184320, fanPower: "15 & 7.5", pumpFlow: 187.2, pumpPower: 5.5, ammonia: 170, pipeDN: "200mm", shipWeight: 7760, operWeight: 11590, A: 2985, B: 5520, H: 1080 },
+        { model: "CXV 411", heatRejection: 1771, fanQty: 2, fanAirFlow: 198360, fanPower: "18.5 & 11", pumpFlow: 187.2, pumpPower: 5.5, ammonia: 170, pipeDN: "200mm", shipWeight: 7810, operWeight: 11640, A: 2985, B: 5520, H: 1080 },
+        { model: "CXV 424", heatRejection: 1822, fanQty: 2, fanAirFlow: 210960, fanPower: "22 & 11", pumpFlow: 187.2, pumpPower: 5.5, ammonia: 170, pipeDN: "200mm", shipWeight: 7820, operWeight: 11650, A: 2985, B: 5520, H: 1080 },
+        { model: "CXV 435", heatRejection: 1874, fanQty: 2, fanAirFlow: 207000, fanPower: "22 & 11", pumpFlow: 187.2, pumpPower: 5.5, ammonia: 201, pipeDN: "200mm", shipWeight: 8490, operWeight: 12410, A: 2985, B: 5520, H: 1314 },
+        { model: "CXV 283", heatRejection: 1219, fanQty: 1, fanAirFlow: 126000, fanPower: 11.0, pumpFlow: 162.4, pumpPower: 4.0, ammonia: 123, pipeDN: "200mm", shipWeight: 5850, operWeight: 9050, A: 3610, B: 3690, H: 1080 },
+        { model: "CXV 297", heatRejection: 1280, fanQty: 1, fanAirFlow: 138600, fanPower: 15.0, pumpFlow: 162.4, pumpPower: 4.0, ammonia: 123, pipeDN: "200mm", shipWeight: 5850, operWeight: 9080, A: 3610, B: 3690, H: 1080 },
+        { model: "CXV 309", heatRejection: 1331, fanQty: 1, fanAirFlow: 149400, fanPower: 18.5, pumpFlow: 162.4, pumpPower: 4.0, ammonia: 123, pipeDN: "200mm", shipWeight: 5900, operWeight: 9100, A: 3610, B: 3690, H: 1080 },
+        { model: "CXV 327", heatRejection: 1409, fanQty: 1, fanAirFlow: 155160, fanPower: 22.0, pumpFlow: 162.4, pumpPower: 4.0, ammonia: 146, pipeDN: "200mm", shipWeight: 6380, operWeight: 9650, A: 3610, B: 3690, H: 1314 },
+        { model: "CXV 416", heatRejection: 1792, fanQty: 2, fanAirFlow: 190800, fanPower: "11 & 5.5", pumpFlow: 193.0, pumpPower: 5.5, ammonia: 182, pipeDN: "200mm", shipWeight: 8400, operWeight: 13230, A: 3610, B: 5520, H: 1080 },
+        { model: "CXV 437", heatRejection: 1883, fanQty: 2, fanAirFlow: 209880, fanPower: "15 & 7.5", pumpFlow: 193.0, pumpPower: 5.5, ammonia: 182, pipeDN: "200mm", shipWeight: 8440, operWeight: 13270, A: 3610, B: 5520, H: 1080 },
+        { model: "CXV 454", heatRejection: 1956, fanQty: 2, fanAirFlow: 226080, fanPower: "18.5 & 11", pumpFlow: 193.0, pumpPower: 5.5, ammonia: 182, pipeDN: "200mm", shipWeight: 8490, operWeight: 13320, A: 3610, B: 5520, H: 1080 },
+        { model: "CXV 468", heatRejection: 2016, fanQty: 2, fanAirFlow: 240120, fanPower: "22 & 11", pumpFlow: 193.0, pumpPower: 5.5, ammonia: 182, pipeDN: "200mm", shipWeight: 8500, operWeight: 13330, A: 3610, B: 5520, H: 1080 },
+        { model: "CXV 481", heatRejection: 2072, fanQty: 2, fanAirFlow: 235080, fanPower: "22 & 11", pumpFlow: 193.0, pumpPower: 5.5, ammonia: 216, pipeDN: "200mm", shipWeight: 9220, operWeight: 14150, A: 3610, B: 5520, H: 1314 }
+      ]
+    },
+    // ------------------------------------------------------------------
+    // SOURCE: BAC (Baltimore Aircoil) VXC Evaporative Condenser
+    // From: Baltimore_VXC.pdf (Bulletin D117/3-7 D, Selection Guide and
+    // Technical Data). Correction tables (Table 2A refrigerant R22/R134a,
+    // Table 2B refrigerant R717) validated exactly against the
+    // bulletin's own worked example (R717, 950kW total heat rejection,
+    // 35C condensing / 22C wet bulb -> factor 1.13 -> corrected load
+    // 1074kW -> VXC-250, reproduces exactly).
+    // Dimensions: A = unit length (mm), B = unit depth/width (mm) --
+    // both read directly off the general arrangement drawings (grouped
+    // by the model ranges shown in each drawing); H = per-model overall
+    // height (mm), taken directly from the engineering data table.
+    // ------------------------------------------------------------------
+    {
+      id: "bac-vxc",
+      kind: "condenser",
+      manufacturer: "Baltimore Aircoil (BAC)",
+      name: { vi: "D\u00e0n ng\u01b0ng bay h\u01a1i BAC VXC", en: "BAC VXC Evaporative Condenser" },
+      shortDesc: {
+        vi: "D\u00e0n ng\u01b0ng bay h\u01a1i h\u00fat gi\u00f3 c\u01b0\u1ee1ng b\u1ee9c c\u1ee7a Baltimore Aircoil, d\u00f9ng cho R-717, R22 v\u00e0 R134a, d\u1ea3i c\u00f4ng su\u1ea5t r\u1ea5t r\u1ed9ng (VXC 14 \u0111\u1ebfn VXC 1608).",
+        en: "Induced-draft evaporative condenser from Baltimore Aircoil, for R-717, R-22 and R-134a systems, spanning a very wide capacity range (VXC 14 through VXC 1608)."
+      },
+      selectionProcedure: {
+        vi: [
+          "X\u00e1c \u0111\u1ecbnh m\u00f4i ch\u1ea5t l\u1ea1nh, nhi\u1ec7t \u0111\u1ed9 ng\u01b0ng t\u1ee5 v\u00e0 nhi\u1ec7t \u0111\u1ed9 b\u1ea7u \u01b0\u1edbt kh\u00f4ng kh\u00ed y\u00eau c\u1ea7u.",
+          "T\u00ednh t\u1ed5ng nhi\u1ec7t th\u1ea3i c\u1ea7n gi\u1ea3i.",
+          "Tra h\u1ec7 s\u1ed1 hi\u1ec7u ch\u1ec9nh (Table 2A/2B) theo m\u00f4i ch\u1ea5t l\u1ea1nh, nhi\u1ec7t \u0111\u1ed9 ng\u01b0ng t\u1ee5 v\u00e0 nhi\u1ec7t \u0111\u1ed9 b\u1ea7u \u01b0\u1edbt.",
+          "Nh\u00e2n t\u1ed5ng nhi\u1ec7t th\u1ea3i v\u1edbi h\u1ec7 s\u1ed1 hi\u1ec7u ch\u1ec9nh \u0111\u1ec3 ra t\u1ea3i tr\u1ecdng hi\u1ec7u ch\u1ec9nh.",
+          "Ch\u1ecdn model c\u00f3 Base Heat Rejection (Table 1) b\u1eb1ng ho\u1eb7c l\u1edbn h\u01a1n g\u1ea7n nh\u1ea5t."
+        ],
+        en: [
+          "Determine the required refrigerant, condensing temperature and wet bulb temperature.",
+          "Calculate the total heat rejection load.",
+          "Refer to the correction factor table (Table 2A/2B) for the refrigerant, condensing temperature and wet bulb temperature used.",
+          "Multiply the total heat rejection by the correction factor to get the corrected load.",
+          "Select the smallest model (Base Heat Rejection, Table 1) equal to or greater than the corrected load."
+        ]
+      },
+      // model, base heat rejection (kW), fan qty/power (kW), pump flow (m3/h) [converted from l/s],
+      // pump qty/power (kW), R-717 charge (kg), drain size (mm), shipping/operating weight (kg),
+      // dims A (length mm) / B (depth mm) from general arrangement drawings, H (height mm) from
+      // the engineering data table
+      models: [
+        { model: "VXC 14", heatRejection: 61, fanQty: 1, fanAirFlow: 8280, fanPower: 1.5, pumpFlow: 7.9, pumpPower: 0.25, ammonia: 9, pipeDN: "65mm", shipWeight: 600, operWeight: 660, A: 914, B: 350, H: 2035 },
+        { model: "VXC 18", heatRejection: 78, fanQty: 1, fanAirFlow: 7920, fanPower: 1.5, pumpFlow: 7.9, pumpPower: 0.25, ammonia: 11, pipeDN: "65mm", shipWeight: 670, operWeight: 740, A: 914, B: 350, H: 2245 },
+        { model: "VXC 25", heatRejection: 108, fanQty: 1, fanAirFlow: 9000, fanPower: 2.2, pumpFlow: 7.9, pumpPower: 0.25, ammonia: 15, pipeDN: "65mm", shipWeight: 760, operWeight: 830, A: 914, B: 350, H: 2465 },
+        { model: "VXC 28", heatRejection: 121, fanQty: 1, fanAirFlow: 8640, fanPower: 2.2, pumpFlow: 7.9, pumpPower: 0.25, ammonia: 19, pipeDN: "65mm", shipWeight: 830, operWeight: 900, A: 914, B: 350, H: 2685 },
+        { model: "VXC 36", heatRejection: 156, fanQty: 1, fanAirFlow: 16560, fanPower: 4.0, pumpFlow: 16.9, pumpPower: 0.37, ammonia: 16, pipeDN: "80mm", shipWeight: 920, operWeight: 1050, A: 1829, B: 350, H: 2035 },
+        { model: "VXC 45", heatRejection: 194, fanQty: 1, fanAirFlow: 18000, fanPower: 4.0, pumpFlow: 16.9, pumpPower: 0.37, ammonia: 20, pipeDN: "80mm", shipWeight: 1030, operWeight: 1170, A: 1829, B: 350, H: 2245 },
+        { model: "VXC 52", heatRejection: 225, fanQty: 1, fanAirFlow: 17280, fanPower: 4.0, pumpFlow: 16.9, pumpPower: 0.37, ammonia: 29, pipeDN: "80mm", shipWeight: 1160, operWeight: 1310, A: 1829, B: 350, H: 2465 },
+        { model: "VXC 59", heatRejection: 250, fanQty: 1, fanAirFlow: 19080, fanPower: 5.5, pumpFlow: 16.9, pumpPower: 0.37, ammonia: 29, pipeDN: "80mm", shipWeight: 1180, operWeight: 1330, A: 1829, B: 350, H: 2465 },
+        { model: "VXC 65", heatRejection: 281, fanQty: 1, fanAirFlow: 19800, fanPower: 5.5, pumpFlow: 16.9, pumpPower: 0.37, ammonia: 36, pipeDN: "80mm", shipWeight: 1330, operWeight: 1500, A: 1829, B: 350, H: 2685 },
+        { model: "VXC 72", heatRejection: 311, fanQty: 1, fanAirFlow: 20880, fanPower: 4.0, pumpFlow: 25.6, pumpPower: 0.75, ammonia: 41, pipeDN: "100mm", shipWeight: 1490, operWeight: 1810, A: 2737, B: 370, H: 2580 },
+        { model: "VXC 86", heatRejection: 371, fanQty: 1, fanAirFlow: 27000, fanPower: 7.5, pumpFlow: 25.6, pumpPower: 0.75, ammonia: 41, pipeDN: "100mm", shipWeight: 1500, operWeight: 1820, A: 2737, B: 370, H: 2580 },
+        { model: "VXC 97", heatRejection: 418, fanQty: 1, fanAirFlow: 25560, fanPower: 7.5, pumpFlow: 25.6, pumpPower: 0.75, ammonia: 50, pipeDN: "100mm", shipWeight: 1730, operWeight: 2080, A: 2737, B: 370, H: 2815 },
+        { model: "VXC 110", heatRejection: 474, fanQty: 1, fanAirFlow: 37440, fanPower: 7.5, pumpFlow: 34.6, pumpPower: 0.75, ammonia: 59, pipeDN: "100mm", shipWeight: 1800, operWeight: 2240, A: 3658, B: 370, H: 2580 },
+        { model: "VXC 125", heatRejection: 539, fanQty: 1, fanAirFlow: 35640, fanPower: 7.5, pumpFlow: 34.6, pumpPower: 0.75, ammonia: 66, pipeDN: "100mm", shipWeight: 2050, operWeight: 2510, A: 3658, B: 370, H: 2815 },
+        { model: "VXC 135", heatRejection: 582, fanQty: 1, fanAirFlow: 39240, fanPower: 11.0, pumpFlow: 34.6, pumpPower: 0.75, ammonia: 73, pipeDN: "100mm", shipWeight: 2080, operWeight: 2540, A: 3658, B: 370, H: 2815 },
+        { model: "VXC 150", heatRejection: 647, fanQty: 1, fanAirFlow: 47880, fanPower: 7.5, pumpFlow: 50.0, pumpPower: 1.5, ammonia: 77, pipeDN: "150mm", shipWeight: 2640, operWeight: 3210, A: 3645, B: 350, H: 3095 },
+        { model: "VXC 166", heatRejection: 716, fanQty: 1, fanAirFlow: 56880, fanPower: 11.0, pumpFlow: 50.0, pumpPower: 1.5, ammonia: 77, pipeDN: "150mm", shipWeight: 2670, operWeight: 3240, A: 3645, B: 350, H: 3095 },
+        { model: "VXC 185", heatRejection: 798, fanQty: 1, fanAirFlow: 56520, fanPower: 11.0, pumpFlow: 50.0, pumpPower: 1.5, ammonia: 104, pipeDN: "150mm", shipWeight: 2950, operWeight: 3670, A: 3645, B: 350, H: 3330 },
+        { model: "VXC 205", heatRejection: 884, fanQty: 1, fanAirFlow: 60840, fanPower: 15.0, pumpFlow: 50.0, pumpPower: 1.5, ammonia: 111, pipeDN: "150mm", shipWeight: 3255, operWeight: 3980, A: 3645, B: 350, H: 3565 },
+        { model: "VXC 221", heatRejection: 953, fanQty: 1, fanAirFlow: 78840, fanPower: 15.0, pumpFlow: 69.1, pumpPower: 2.2, ammonia: 109, pipeDN: "150mm", shipWeight: 4250, operWeight: 5860, A: 3550, B: 460, H: 3585 },
+        { model: "VXC 250", heatRejection: 1078, fanQty: 1, fanAirFlow: 76320, fanPower: 15.0, pumpFlow: 69.1, pumpPower: 2.2, ammonia: 145, pipeDN: "150mm", shipWeight: 4770, operWeight: 6390, A: 3550, B: 460, H: 3820 },
+        { model: "VXC 265", heatRejection: 1142, fanQty: 1, fanAirFlow: 81720, fanPower: 18.5, pumpFlow: 69.1, pumpPower: 2.2, ammonia: 145, pipeDN: "150mm", shipWeight: 4815, operWeight: 6435, A: 3550, B: 460, H: 3820 },
+        { model: "VXC S288", heatRejection: 1241, fanQty: 1, fanAirFlow: 82080, fanPower: 18.5, pumpFlow: 87.5, pumpPower: 2.2, ammonia: 163, pipeDN: "150mm", shipWeight: 5525, operWeight: 7600, A: 3550, B: 460, H: 4245 },
+        { model: "VXC S300", heatRejection: 1293, fanQty: 1, fanAirFlow: 87120, fanPower: 22.0, pumpFlow: 87.5, pumpPower: 2.2, ammonia: 163, pipeDN: "150mm", shipWeight: 5555, operWeight: 7630, A: 3550, B: 460, H: 4245 },
+        { model: "VXC S328", heatRejection: 1413, fanQty: 1, fanAirFlow: 96120, fanPower: 30.0, pumpFlow: 87.5, pumpPower: 2.2, ammonia: 163, pipeDN: "150mm", shipWeight: 5630, operWeight: 7705, A: 3550, B: 460, H: 4245 },
+        { model: "VXC S350", heatRejection: 1508, fanQty: 1, fanAirFlow: 94320, fanPower: 30.0, pumpFlow: 87.5, pumpPower: 2.2, ammonia: 195, pipeDN: "150mm", shipWeight: 6180, operWeight: 8320, A: 3550, B: 460, H: 4480 },
+        { model: "VXC S403", heatRejection: 1737, fanQty: 1, fanAirFlow: 131760, fanPower: 30.0, pumpFlow: 131.8, pumpPower: 4.0, ammonia: 197, pipeDN: "200mm", shipWeight: 7170, operWeight: 10225, A: 5388, B: 580, H: 4010 },
+        { model: "VXC S429", heatRejection: 1849, fanQty: 1, fanAirFlow: 140040, fanPower: 37.0, pumpFlow: 131.8, pumpPower: 4.0, ammonia: 197, pipeDN: "200mm", shipWeight: 7230, operWeight: 10285, A: 5388, B: 580, H: 4010 },
+        { model: "VXC S455", heatRejection: 1961, fanQty: 1, fanAirFlow: 125640, fanPower: 30.0, pumpFlow: 131.8, pumpPower: 4.0, ammonia: 245, pipeDN: "200mm", shipWeight: 8125, operWeight: 11270, A: 5388, B: 580, H: 4245 },
+        { model: "VXC S482", heatRejection: 2077, fanQty: 1, fanAirFlow: 135000, fanPower: 37.0, pumpFlow: 131.8, pumpPower: 4.0, ammonia: 245, pipeDN: "200mm", shipWeight: 8175, operWeight: 11320, A: 5388, B: 580, H: 4245 },
+        { model: "VXC S504", heatRejection: 2172, fanQty: 1, fanAirFlow: 131760, fanPower: 37.0, pumpFlow: 131.8, pumpPower: 4.0, ammonia: 293, pipeDN: "200mm", shipWeight: 9260, operWeight: 12500, A: 5388, B: 580, H: 4480 },
+        { model: "VXC S576", heatRejection: 2482, fanQty: 2, fanAirFlow: 164160, fanPower: 18.5, pumpFlow: 175.0, pumpQty: 2, pumpPower: 2.2, ammonia: 327, pipeDN: "250mm", shipWeight: 10880, operWeight: 15120, A: 7226, B: 460, H: 4245 },
+        { model: "VXC S600", heatRejection: 2585, fanQty: 2, fanAirFlow: 174240, fanPower: 22.0, pumpFlow: 175.0, pumpQty: 2, pumpPower: 2.2, ammonia: 327, pipeDN: "250mm", shipWeight: 10980, operWeight: 15220, A: 7226, B: 460, H: 4245 },
+        { model: "VXC S656", heatRejection: 2826, fanQty: 2, fanAirFlow: 192240, fanPower: 30.0, pumpFlow: 175.0, pumpQty: 2, pumpPower: 2.2, ammonia: 327, pipeDN: "250mm", shipWeight: 11100, operWeight: 15400, A: 7226, B: 460, H: 4245 },
+        { model: "VXC S700", heatRejection: 3016, fanQty: 2, fanAirFlow: 188640, fanPower: 30.0, pumpFlow: 175.0, pumpQty: 2, pumpPower: 2.2, ammonia: 390, pipeDN: "250mm", shipWeight: 12355, operWeight: 16655, A: 7226, B: 460, H: 4480 },
+        { model: "VXC S806", heatRejection: 3473, fanQty: 2, fanAirFlow: 263520, fanPower: 30.0, pumpFlow: 263.5, pumpQty: 2, pumpPower: 4.0, ammonia: 395, pipeDN: "300mm", shipWeight: 14415, operWeight: 20555, A: 10903, B: 580, H: 4010 },
+        { model: "VXC S858", heatRejection: 3697, fanQty: 2, fanAirFlow: 280080, fanPower: 37.0, pumpFlow: 263.5, pumpQty: 2, pumpPower: 4.0, ammonia: 395, pipeDN: "300mm", shipWeight: 14570, operWeight: 20755, A: 10903, B: 580, H: 4010 },
+        { model: "VXC S910", heatRejection: 3921, fanQty: 2, fanAirFlow: 251280, fanPower: 30.0, pumpFlow: 263.5, pumpQty: 2, pumpPower: 4.0, ammonia: 490, pipeDN: "300mm", shipWeight: 16420, operWeight: 22570, A: 10903, B: 580, H: 4245 },
+        { model: "VXC S964", heatRejection: 4153, fanQty: 2, fanAirFlow: 270000, fanPower: 37.0, pumpFlow: 263.5, pumpQty: 2, pumpPower: 4.0, ammonia: 490, pipeDN: "300mm", shipWeight: 16550, operWeight: 22770, A: 10903, B: 580, H: 4245 },
+        { model: "VXC S1010", heatRejection: 4352, fanQty: 2, fanAirFlow: 263520, fanPower: 37.0, pumpFlow: 263.5, pumpQty: 2, pumpPower: 4.0, ammonia: 585, pipeDN: "300mm", shipWeight: 18505, operWeight: 25035, A: 10903, B: 580, H: 4480 },
+        { model: "VXC 357", heatRejection: 1538, fanQty: 1, fanAirFlow: 123480, fanPower: 22.0, pumpFlow: 110.9, pumpPower: 4.0, ammonia: 181, pipeDN: "200mm", shipWeight: 5300, operWeight: 7340, A: 3550, B: 480, H: 4075 },
+        { model: "VXC 399", heatRejection: 1719, fanQty: 1, fanAirFlow: 113760, fanPower: 22.0, pumpFlow: 110.9, pumpPower: 4.0, ammonia: 218, pipeDN: "200mm", shipWeight: 6600, operWeight: 8290, A: 3550, B: 480, H: 4310 },
+        { model: "VXC 454", heatRejection: 1956, fanQty: 1, fanAirFlow: 123840, fanPower: 30.0, pumpFlow: 110.9, pumpPower: 4.0, ammonia: 250, pipeDN: "200mm", shipWeight: 7860, operWeight: 9580, A: 3550, B: 480, H: 4545 },
+        { model: "VXC 562", heatRejection: 2422, fanQty: 2, fanAirFlow: 184320, fanPower: 18.5, pumpFlow: 168.1, pumpPower: 4.0, ammonia: 250, pipeDN: "250mm", shipWeight: 8990, operWeight: 11490, A: 5388, B: 610, H: 4075 },
+        { model: "VXC 620", heatRejection: 2672, fanQty: 2, fanAirFlow: 180000, fanPower: 18.5, pumpFlow: 168.1, pumpPower: 4.0, ammonia: 349, pipeDN: "250mm", shipWeight: 10200, operWeight: 12680, A: 5388, B: 610, H: 4310 },
+        { model: "VXC 680", heatRejection: 2930, fanQty: 2, fanAirFlow: 187200, fanPower: 22.0, pumpFlow: 168.1, pumpPower: 4.0, ammonia: 390, pipeDN: "250mm", shipWeight: 11530, operWeight: 14100, A: 5388, B: 610, H: 4545 },
+        { model: "VXC 714", heatRejection: 3076, fanQty: 2, fanAirFlow: 246960, fanPower: 22.0, pumpFlow: 221.8, pumpQty: 2, pumpPower: 4.0, ammonia: 362, pipeDN: "250mm", shipWeight: 10600, operWeight: 14430, A: 7226, B: 480, H: 4075 },
+        { model: "VXC 798", heatRejection: 3438, fanQty: 2, fanAirFlow: 227520, fanPower: 22.0, pumpFlow: 221.8, pumpQty: 2, pumpPower: 4.0, ammonia: 435, pipeDN: "250mm", shipWeight: 13200, operWeight: 16590, A: 7226, B: 480, H: 4310 },
+        { model: "VXC 908", heatRejection: 3912, fanQty: 2, fanAirFlow: 247680, fanPower: 30.0, pumpFlow: 221.8, pumpQty: 2, pumpPower: 4.0, ammonia: 499, pipeDN: "250mm", shipWeight: 15700, operWeight: 19140, A: 7226, B: 480, H: 4545 },
+        { model: "VXC 1124", heatRejection: 4843, fanQty: 4, fanAirFlow: 368640, fanPower: 18.5, pumpFlow: 336.2, pumpQty: 2, pumpPower: 4.0, ammonia: 581, pipeDN: "300mm", shipWeight: 17940, operWeight: 22740, A: 10903, B: 610, H: 4075 },
+        { model: "VXC 1240", heatRejection: 5343, fanQty: 4, fanAirFlow: 360360, fanPower: 18.5, pumpFlow: 336.2, pumpQty: 2, pumpPower: 4.0, ammonia: 699, pipeDN: "300mm", shipWeight: 20380, operWeight: 25240, A: 10903, B: 610, H: 4310 },
+        { model: "VXC 1360", heatRejection: 5862, fanQty: 4, fanAirFlow: 374400, fanPower: 22.0, pumpFlow: 336.2, pumpQty: 2, pumpPower: 4.0, ammonia: 780, pipeDN: "300mm", shipWeight: 23100, operWeight: 28090, A: 10903, B: 610, H: 4545 },
+        { model: "VXC 495", heatRejection: 2133, fanQty: 1, fanAirFlow: 144000, fanPower: 37.0, pumpFlow: 132.8, pumpPower: 4.0, ammonia: 250, pipeDN: "200mm", shipWeight: 8210, operWeight: 12040, A: 3550, B: 480, H: 4310 },
+        { model: "VXC 516", heatRejection: 2223, fanQty: 1, fanAirFlow: 141840, fanPower: 37.0, pumpFlow: 132.8, pumpPower: 4.0, ammonia: 297, pipeDN: "200mm", shipWeight: 9170, operWeight: 13030, A: 3550, B: 480, H: 4545 },
+        { model: "VXC 715", heatRejection: 3081, fanQty: 2, fanAirFlow: 201960, fanPower: 22.0, pumpFlow: 189.7, pumpPower: 4.0, ammonia: 374, pipeDN: "250mm", shipWeight: 11855, operWeight: 17555, A: 5388, B: 610, H: 4310 },
+        { model: "VXC 772", heatRejection: 3326, fanQty: 2, fanAirFlow: 224280, fanPower: 30.0, pumpFlow: 189.7, pumpPower: 4.0, ammonia: 374, pipeDN: "250mm", shipWeight: 12035, operWeight: 17735, A: 5388, B: 610, H: 4310 },
+        { model: "VXC 804", heatRejection: 3464, fanQty: 2, fanAirFlow: 217440, fanPower: 30.0, pumpFlow: 189.7, pumpPower: 4.0, ammonia: 449, pipeDN: "250mm", shipWeight: 13435, operWeight: 19290, A: 5388, B: 610, H: 4545 },
+        { model: "VXC 990", heatRejection: 4265, fanQty: 2, fanAirFlow: 288000, fanPower: 37.0, pumpFlow: 265.7, pumpQty: 2, pumpPower: 4.0, ammonia: 499, pipeDN: "250mm", shipWeight: 16520, operWeight: 24185, A: 7226, B: 480, H: 4310 },
+        { model: "VXC 1032", heatRejection: 4446, fanQty: 2, fanAirFlow: 283680, fanPower: 37.0, pumpFlow: 265.7, pumpQty: 2, pumpPower: 4.0, ammonia: 594, pipeDN: "250mm", shipWeight: 18280, operWeight: 26095, A: 7226, B: 480, H: 4545 },
+        { model: "VXC 1430", heatRejection: 6161, fanQty: 4, fanAirFlow: 403920, fanPower: 22.0, pumpFlow: 379.8, pumpQty: 2, pumpPower: 4.0, ammonia: 748, pipeDN: "300mm", shipWeight: 23680, operWeight: 35200, A: 10903, B: 610, H: 4310 },
+        { model: "VXC 1544", heatRejection: 6652, fanQty: 4, fanAirFlow: 448560, fanPower: 30.0, pumpFlow: 379.4, pumpQty: 2, pumpPower: 4.0, ammonia: 748, pipeDN: "300mm", shipWeight: 23770, operWeight: 35560, A: 10903, B: 610, H: 4310 },
+        { model: "VXC 1608", heatRejection: 6928, fanQty: 4, fanAirFlow: 434880, fanPower: 30.0, pumpFlow: 379.4, pumpQty: 2, pumpPower: 4.0, ammonia: 898, pipeDN: "300mm", shipWeight: 26845, operWeight: 38665, A: 10903, B: 610, H: 4545 }
+      ],
+      correctionTables: { R717: BAC_VXC_CORRECTION_R717, R22_R134A: BAC_VXC_CORRECTION_R22_R134A }
+    },
+    // ------------------------------------------------------------------
+    // SOURCE: Liang Chi LVN Series counterflow (cross-flow, square) cooling tower
+    // From: CATALOGUE_LVN___TIENG_VIET_.pdf / CATALOGUE_LVN-SERIES_40_1000_VN.pdf
+    // (both uploads had identical content -- treated as one catalogue)
+    // Base single-cell models. The catalogue publishes generalized "n-cell"
+    // formulas (suffix "-Cn": flow = value×n; length L = coef×n - const)
+    // for building multi-cell towers; this app lists the base n=1 unit only.
+    // For a multi-cell requirement, multiply flow by n and use
+    // L = coef×n - const (see catalogue) -- contact a sales rep to confirm.
+    // Flow converted from L/min (catalogue) to m3/h (×0.06). Fan air flow
+    // converted from m3/min (catalogue, per cell) to m3/h (×60). Fan power
+    // converted from HP (catalogue) to kW (×0.746). No circulating pump is
+    // supplied with the tower (customer-supplied) -- only the required pump
+    // head (m) is given in the catalogue, not a pump flow/power spec, so no
+    // pump fields are included here.
+    // ------------------------------------------------------------------
+    {
+      id: "liangchi-lvn",
+      kind: "coolingtower",
+      manufacturer: "Liang Chi (Cong ty TNHH CN Liang Chi II, Việt Nam)",
+      name: { vi: "Tháp giải nhiệt Liang Chi LVN (dòng chảy ngược)", en: "Liang Chi LVN Series Counterflow Cooling Tower" },
+      shortDesc: {
+        vi: "Tháp giải nhiệt dòng chảy ngược (counterflow), thiết kế tiết kiệm diện tích, nước và điện, dùng vỏ FRP chống ăn mòn.",
+        en: "Counterflow cooling tower, space/water/power-saving design, FRP casing resisting corrosion."
+      },
+      designCondition: { vi: "Nhiệt độ nước vào 37°C, nhiệt độ nước ra 32°C, nhiệt độ bầu ướt không khí 27°C. Lưu lượng định mức trong bảng là công suất làm mát ở điều kiện này.", en: "Inlet water 37°C, outlet water 32°C, air wet bulb 27°C. The nominal flow rate in the table is the cooling capacity at this condition." },
+      notes: {
+        vi: [
+          "Model liệt kê là đơn vị 1 ngăn (n=1) cơ bản. Tháp nhiều ngăn (Cn) có công thức riêng cho lưu lượng và chiều dài, xem catalogue gốc hoặc liên hệ nhà cung cấp.",
+          "Không bao gồm bơm tuần hoàn (khách hàng tự cung cấp) -- catalogue chỉ cho cột áp bơm yêu cầu (m), không phải thông số bơm kèm theo tháp.",
+          "Chân móng không thuộc phạm vi cung cấp của tháp."
+        ],
+        en: [
+          "Listed models are the base single-cell (n=1) unit. Multi-cell towers (Cn) use separate formulas for flow and length -- see the original catalogue or contact the supplier.",
+          "Does not include a circulating pump (customer-supplied) -- the catalogue only gives the required pump head (m), not a pump flow/power spec bundled with the tower.",
+          "Foundation/concrete base is not part of the tower's scope of supply."
+        ]
+      },
+      // model, nominal water flow (m3/h) at design condition [converted from L/min x0.06],
+      // fan qty, fan air flow (m3/h) [converted from m3/min x60], fan power (kW) [converted
+      // from HP x0.746], pipeDN (inlet/outlet pipe size), shipping weight (kg, "dry"),
+      // operating weight (kg), dims A(width mm)/B(length mm, n=1)/H(height mm)
+      models: [
+        { model: "LVN-0104", flow: 38.2, fanQty: 1, fanAirFlow: 16200, fanPower: 0.75, pipeDN: "80A", shipWeight: 506, operWeight: 1510, A: 2497, B: 1290, H: 3095 },
+        { model: "LVN-0106", flow: 46.0, fanQty: 1, fanAirFlow: 19440, fanPower: 0.75, pipeDN: "100A", shipWeight: 614, operWeight: 1890, A: 2698, B: 1490, H: 3160 },
+        { model: "LVN-0154", flow: 43.7, fanQty: 1, fanAirFlow: 19440, fanPower: 1.12, pipeDN: "100A", shipWeight: 521, operWeight: 1525, A: 2497, B: 1290, H: 3137 },
+        { model: "LVN-0156", flow: 52.3, fanQty: 1, fanAirFlow: 22320, fanPower: 1.12, pipeDN: "100A", shipWeight: 629, operWeight: 1905, A: 2698, B: 1490, H: 3171 },
+        { model: "LVN-0158", flow: 56.2, fanQty: 1, fanAirFlow: 23760, fanPower: 1.12, pipeDN: "100A", shipWeight: 654, operWeight: 1998, A: 2803, B: 1590, H: 3171 },
+        { model: "LVN-0204", flow: 48.4, fanQty: 1, fanAirFlow: 21240, fanPower: 1.49, pipeDN: "100A", shipWeight: 536, operWeight: 1540, A: 2497, B: 1290, H: 3160 },
+        { model: "LVN-0206", flow: 57.7, fanQty: 1, fanAirFlow: 25200, fanPower: 1.49, pipeDN: "100A", shipWeight: 644, operWeight: 1920, A: 2698, B: 1490, H: 3171 },
+        { model: "LVN-0208", flow: 61.6, fanQty: 1, fanAirFlow: 26640, fanPower: 1.49, pipeDN: "100A", shipWeight: 669, operWeight: 2013, A: 2803, B: 1590, H: 3171 },
+        { model: "LVN-0304", flow: 55.4, fanQty: 1, fanAirFlow: 24480, fanPower: 2.24, pipeDN: "100A", shipWeight: 551, operWeight: 1555, A: 2497, B: 1290, H: 3224 },
+        { model: "LVN-0306", flow: 66.3, fanQty: 1, fanAirFlow: 29160, fanPower: 2.24, pipeDN: "100A", shipWeight: 659, operWeight: 1935, A: 2698, B: 1490, H: 3222 },
+        { model: "LVN-0308", flow: 70.2, fanQty: 1, fanAirFlow: 30960, fanPower: 2.24, pipeDN: "100A", shipWeight: 684, operWeight: 2028, A: 2803, B: 1590, H: 3222 },
+        { model: "LVN-0504", flow: 65.5, fanQty: 1, fanAirFlow: 29880, fanPower: 3.73, pipeDN: "100A", shipWeight: 566, operWeight: 1570, A: 2497, B: 1290, H: 3234 },
+        { model: "LVN-0506", flow: 78.0, fanQty: 1, fanAirFlow: 35280, fanPower: 3.73, pipeDN: "125A", shipWeight: 674, operWeight: 1950, A: 2698, B: 1490, H: 3274 },
+        { model: "LVN-0508", flow: 83.5, fanQty: 1, fanAirFlow: 37800, fanPower: 3.73, pipeDN: "125A", shipWeight: 699, operWeight: 2043, A: 2803, B: 1590, H: 3274 },
+        { model: "LVN-0758", flow: 95.2, fanQty: 1, fanAirFlow: 43920, fanPower: 5.59, pipeDN: "125A", shipWeight: 714, operWeight: 2058, A: 2803, B: 1590, H: 3325 },
+        { model: "LVN-1022", flow: 79.6, fanQty: 1, fanAirFlow: 34200, fanPower: 1.49, pipeDN: "125A", shipWeight: 849, operWeight: 2269, A: 3198, B: 2000, H: 3754 },
+        { model: "LVN-10250", flow: 758.2, fanQty: 1, fanAirFlow: 306360, fanPower: 18.65, pipeDN: "200A", shipWeight: 6057, operWeight: 18413, A: 7005, B: 5020, H: 6456 },
+        { model: "LVN-10300", flow: 805.0, fanQty: 1, fanAirFlow: 325440, fanPower: 22.38, pipeDN: "200A", shipWeight: 6257, operWeight: 18613, A: 7005, B: 5020, H: 6456 },
+        { model: "LVN-1032", flow: 93.6, fanQty: 1, fanAirFlow: 40320, fanPower: 2.24, pipeDN: "125A", shipWeight: 869, operWeight: 2289, A: 3198, B: 2000, H: 3792 },
+        { model: "LVN-1035", flow: 101.4, fanQty: 1, fanAirFlow: 43560, fanPower: 2.24, pipeDN: "125A", shipWeight: 925, operWeight: 2395, A: 3198, B: 2290, H: 3795 },
+        { model: "LVN-10400", flow: 885.3, fanQty: 1, fanAirFlow: 364320, fanPower: 29.84, pipeDN: "200A", shipWeight: 6457, operWeight: 18813, A: 7005, B: 5020, H: 6517 },
+        { model: "LVN-10500", flow: 953.2, fanQty: 1, fanAirFlow: 393840, fanPower: 37.3, pipeDN: "200A", shipWeight: 6557, operWeight: 18913, A: 7005, B: 5020, H: 6517 },
+        { model: "LVN-1052", flow: 111.5, fanQty: 1, fanAirFlow: 48240, fanPower: 3.73, pipeDN: "150A", shipWeight: 889, operWeight: 2309, A: 3198, B: 2000, H: 4067 },
+        { model: "LVN-1055", flow: 120.9, fanQty: 1, fanAirFlow: 51840, fanPower: 3.73, pipeDN: "150A", shipWeight: 945, operWeight: 2415, A: 3198, B: 2290, H: 4070 },
+        { model: "LVN-10600", flow: 1011.7, fanQty: 1, fanAirFlow: 424080, fanPower: 44.76, pipeDN: "200A", shipWeight: 6657, operWeight: 19013, A: 7005, B: 5020, H: 6207 },
+        { model: "LVN-1072", flow: 128.7, fanQty: 1, fanAirFlow: 55800, fanPower: 5.59, pipeDN: "150A", shipWeight: 909, operWeight: 2329, A: 3198, B: 2000, H: 4077 },
+        { model: "LVN-1075", flow: 139.6, fanQty: 1, fanAirFlow: 60480, fanPower: 5.59, pipeDN: "150A", shipWeight: 965, operWeight: 2435, A: 3198, B: 2290, H: 4080 },
+        { model: "LVN-1102", flow: 143.5, fanQty: 1, fanAirFlow: 63000, fanPower: 7.46, pipeDN: "150A", shipWeight: 929, operWeight: 2349, A: 3198, B: 2000, H: 4115 },
+        { model: "LVN-1105", flow: 155.2, fanQty: 1, fanAirFlow: 67680, fanPower: 7.46, pipeDN: "150A", shipWeight: 985, operWeight: 2455, A: 3198, B: 2290, H: 4118 },
+        { model: "LVN-1150", flow: 67.9, fanQty: 1, fanAirFlow: 26640, fanPower: 1.12, pipeDN: "100A", shipWeight: 818, operWeight: 2238, A: 3003, B: 1790, H: 3706 },
+        { model: "LVN-1155", flow: 176.3, fanQty: 1, fanAirFlow: 78480, fanPower: 11.19, pipeDN: "150A", shipWeight: 1015, operWeight: 2485, A: 3198, B: 2290, H: 4224 },
+        { model: "LVN-1200", flow: 74.1, fanQty: 1, fanAirFlow: 31320, fanPower: 1.49, pipeDN: "100A", shipWeight: 833, operWeight: 2253, A: 3003, B: 1790, H: 3706 },
+        { model: "LVN-1300", flow: 85.0, fanQty: 1, fanAirFlow: 36720, fanPower: 2.24, pipeDN: "125A", shipWeight: 848, operWeight: 2268, A: 3003, B: 1790, H: 3744 },
+        { model: "LVN-1500", flow: 100.6, fanQty: 1, fanAirFlow: 43920, fanPower: 3.73, pipeDN: "125A", shipWeight: 878, operWeight: 2298, A: 3003, B: 1790, H: 4019 },
+        { model: "LVN-1750", flow: 114.7, fanQty: 1, fanAirFlow: 50760, fanPower: 5.59, pipeDN: "150A", shipWeight: 908, operWeight: 2328, A: 3003, B: 1790, H: 4019 },
+        { model: "LVN-2050", flow: 134.2, fanQty: 1, fanAirFlow: 57600, fanPower: 3.73, pipeDN: "100A", shipWeight: 1102, operWeight: 2902, A: 4210, B: 1790, H: 4009 },
+        { model: "LVN-2052", flow: 151.3, fanQty: 1, fanAirFlow: 65160, fanPower: 3.73, pipeDN: "125A", shipWeight: 1263, operWeight: 3313, A: 4410, B: 2010, H: 4087 },
+        { model: "LVN-2055", flow: 159.9, fanQty: 1, fanAirFlow: 69840, fanPower: 3.73, pipeDN: "125A", shipWeight: 1329, operWeight: 3499, A: 4510, B: 2210, H: 4106 },
+        { model: "LVN-2070", flow: 154.4, fanQty: 1, fanAirFlow: 66600, fanPower: 5.59, pipeDN: "125A", shipWeight: 1122, operWeight: 2922, A: 4210, B: 1790, H: 4019 },
+        { model: "LVN-2072", flow: 173.9, fanQty: 1, fanAirFlow: 75240, fanPower: 5.59, pipeDN: "125A", shipWeight: 1283, operWeight: 3333, A: 4410, B: 2010, H: 4097 },
+        { model: "LVN-2075", flow: 184.1, fanQty: 1, fanAirFlow: 80640, fanPower: 5.59, pipeDN: "125A", shipWeight: 1349, operWeight: 3519, A: 4510, B: 2210, H: 4116 },
+        { model: "LVN-2100", flow: 172.4, fanQty: 1, fanAirFlow: 74520, fanPower: 7.46, pipeDN: "125A", shipWeight: 1142, operWeight: 2942, A: 4210, B: 1790, H: 4057 },
+        { model: "LVN-2102", flow: 194.2, fanQty: 1, fanAirFlow: 84240, fanPower: 7.46, pipeDN: "125A", shipWeight: 1303, operWeight: 3353, A: 4410, B: 2010, H: 4134 },
+        { model: "LVN-2105", flow: 205.9, fanQty: 1, fanAirFlow: 90360, fanPower: 7.46, pipeDN: "125A", shipWeight: 1369, operWeight: 3539, A: 4510, B: 2210, H: 4154 },
+        { model: "LVN-2150", flow: 196.6, fanQty: 1, fanAirFlow: 85680, fanPower: 11.19, pipeDN: "125A", shipWeight: 1172, operWeight: 2972, A: 4210, B: 1790, H: 4153 },
+        { model: "LVN-2152", flow: 221.5, fanQty: 1, fanAirFlow: 96840, fanPower: 11.19, pipeDN: "150A", shipWeight: 1333, operWeight: 3383, A: 4410, B: 2010, H: 4241 },
+        { model: "LVN-2155", flow: 234.0, fanQty: 1, fanAirFlow: 104040, fanPower: 11.19, pipeDN: "150A", shipWeight: 1399, operWeight: 3569, A: 4510, B: 2210, H: 4260 },
+        { model: "LVN-2200", flow: 219.2, fanQty: 1, fanAirFlow: 95760, fanPower: 14.92, pipeDN: "150A", shipWeight: 1202, operWeight: 3002, A: 4210, B: 1790, H: 4197 },
+        { model: "LVN-2202", flow: 244.1, fanQty: 1, fanAirFlow: 108720, fanPower: 14.92, pipeDN: "150A", shipWeight: 1363, operWeight: 3413, A: 4410, B: 2010, H: 4285 },
+        { model: "LVN-2205", flow: 259.0, fanQty: 1, fanAirFlow: 116280, fanPower: 14.92, pipeDN: "150A", shipWeight: 1429, operWeight: 3599, A: 4510, B: 2210, H: 4304 },
+        { model: "LVN-3070", flow: 207.5, fanQty: 1, fanAirFlow: 88560, fanPower: 5.59, pipeDN: "125A", shipWeight: 1486, operWeight: 3806, A: 4710, B: 2410, H: 4121 },
+        { model: "LVN-3075", flow: 248.8, fanQty: 1, fanAirFlow: 104760, fanPower: 5.59, pipeDN: "100A", shipWeight: 1943, operWeight: 4733, A: 5110, B: 3020, H: 4132 },
+        { model: "LVN-3100", flow: 232.4, fanQty: 1, fanAirFlow: 99360, fanPower: 7.46, pipeDN: "125A", shipWeight: 1506, operWeight: 3826, A: 4710, B: 2410, H: 4159 },
+        { model: "LVN-3105", flow: 276.1, fanQty: 1, fanAirFlow: 117360, fanPower: 7.46, pipeDN: "100A", shipWeight: 1963, operWeight: 4753, A: 5110, B: 3020, H: 4170 },
+        { model: "LVN-3150", flow: 264.4, fanQty: 1, fanAirFlow: 114480, fanPower: 11.19, pipeDN: "150A", shipWeight: 1526, operWeight: 3846, A: 4710, B: 2410, H: 4265 },
+        { model: "LVN-3155", flow: 313.6, fanQty: 1, fanAirFlow: 135360, fanPower: 11.19, pipeDN: "125A", shipWeight: 1983, operWeight: 4773, A: 5110, B: 3020, H: 4256 },
+        { model: "LVN-3200", flow: 294.1, fanQty: 1, fanAirFlow: 128160, fanPower: 14.92, pipeDN: "150A", shipWeight: 1556, operWeight: 3876, A: 4710, B: 2410, H: 4309 },
+        { model: "LVN-3205", flow: 346.3, fanQty: 1, fanAirFlow: 151560, fanPower: 14.92, pipeDN: "125A", shipWeight: 2013, operWeight: 4803, A: 5110, B: 3020, H: 4300 },
+        { model: "LVN-3250", flow: 315.9, fanQty: 1, fanAirFlow: 138240, fanPower: 18.65, pipeDN: "150A", shipWeight: 1586, operWeight: 3906, A: 4710, B: 2410, H: 4353 },
+        { model: "LVN-3255", flow: 371.3, fanQty: 1, fanAirFlow: 163440, fanPower: 18.65, pipeDN: "125A", shipWeight: 2043, operWeight: 4833, A: 5110, B: 3020, H: 4344 },
+        { model: "LVN-4100", flow: 283.9, fanQty: 1, fanAirFlow: 121320, fanPower: 7.46, pipeDN: "125A", shipWeight: 2115, operWeight: 5635, A: 5110, B: 3220, H: 4170 },
+        { model: "LVN-4105", flow: 328.4, fanQty: 1, fanAirFlow: 139680, fanPower: 7.46, pipeDN: "125A", shipWeight: 2455, operWeight: 6585, A: 5710, B: 3620, H: 4174 },
+        { model: "LVN-4150", flow: 323.7, fanQty: 1, fanAirFlow: 139680, fanPower: 11.19, pipeDN: "125A", shipWeight: 2135, operWeight: 5655, A: 5110, B: 3220, H: 4256 },
+        { model: "LVN-4155", flow: 378.3, fanQty: 1, fanAirFlow: 162720, fanPower: 11.19, pipeDN: "125A", shipWeight: 2475, operWeight: 6605, A: 5710, B: 3620, H: 4280 },
+        { model: "LVN-4200", flow: 361.1, fanQty: 1, fanAirFlow: 156600, fanPower: 14.92, pipeDN: "125A", shipWeight: 2165, operWeight: 5685, A: 5110, B: 3220, H: 4300 },
+        { model: "LVN-4205", flow: 421.2, fanQty: 1, fanAirFlow: 182520, fanPower: 14.92, pipeDN: "125A", shipWeight: 2505, operWeight: 6635, A: 5710, B: 3620, H: 4324 },
+        { model: "LVN-4250", flow: 387.7, fanQty: 1, fanAirFlow: 168840, fanPower: 18.65, pipeDN: "125A", shipWeight: 2195, operWeight: 5715, A: 5110, B: 3220, H: 4344 },
+        { model: "LVN-4255", flow: 451.6, fanQty: 1, fanAirFlow: 197280, fanPower: 18.65, pipeDN: "125A", shipWeight: 2535, operWeight: 6665, A: 5710, B: 3620, H: 4348 },
+        { model: "LVN-4300", flow: 410.3, fanQty: 1, fanAirFlow: 179280, fanPower: 22.38, pipeDN: "125A", shipWeight: 2225, operWeight: 5745, A: 5110, B: 3220, H: 4371 },
+        { model: "LVN-4305", flow: 477.4, fanQty: 1, fanAirFlow: 209520, fanPower: 22.38, pipeDN: "125A", shipWeight: 2565, operWeight: 6695, A: 5710, B: 3620, H: 4380 },
+        { model: "LVN-5150", flow: 389.2, fanQty: 1, fanAirFlow: 165960, fanPower: 11.19, pipeDN: "125A", shipWeight: 2565, operWeight: 6972, A: 5710, B: 3820, H: 4280 },
+        { model: "LVN-5200", flow: 434.5, fanQty: 1, fanAirFlow: 186120, fanPower: 14.92, pipeDN: "125A", shipWeight: 2595, operWeight: 7002, A: 5710, B: 3820, H: 4324 },
+        { model: "LVN-5250", flow: 465.7, fanQty: 1, fanAirFlow: 201240, fanPower: 18.65, pipeDN: "125A", shipWeight: 2622, operWeight: 7032, A: 5710, B: 3820, H: 4348 },
+        { model: "LVN-5300", flow: 492.2, fanQty: 1, fanAirFlow: 213480, fanPower: 22.38, pipeDN: "125A", shipWeight: 2652, operWeight: 7062, A: 5710, B: 3820, H: 4380 },
+        { model: "LVN-5400", flow: 546.8, fanQty: 1, fanAirFlow: 239760, fanPower: 29.84, pipeDN: "150A", shipWeight: 2682, operWeight: 7092, A: 5710, B: 3820, H: 4500 },
+        { model: "LVN-6150", flow: 442.3, fanQty: 1, fanAirFlow: 181800, fanPower: 11.19, pipeDN: "125A", shipWeight: 3535, operWeight: 8391, A: 5710, B: 3820, H: 5093 },
+        { model: "LVN-6200", flow: 485.9, fanQty: 1, fanAirFlow: 203760, fanPower: 14.92, pipeDN: "125A", shipWeight: 3565, operWeight: 8421, A: 5710, B: 3820, H: 5137 },
+        { model: "LVN-6250", flow: 523.4, fanQty: 1, fanAirFlow: 219600, fanPower: 18.65, pipeDN: "150A", shipWeight: 3595, operWeight: 8451, A: 5710, B: 3820, H: 5161 },
+        { model: "LVN-6300", flow: 556.1, fanQty: 1, fanAirFlow: 233280, fanPower: 22.38, pipeDN: "150A", shipWeight: 3625, operWeight: 8481, A: 5710, B: 3820, H: 5193 },
+        { model: "LVN-6400", flow: 611.5, fanQty: 1, fanAirFlow: 261000, fanPower: 29.84, pipeDN: "150A", shipWeight: 3655, operWeight: 8511, A: 5710, B: 3820, H: 5313 },
+        { model: "LVN-7150", flow: 520.3, fanQty: 1, fanAirFlow: 209520, fanPower: 11.19, pipeDN: "150A", shipWeight: 4580, operWeight: 14010, A: 6105, B: 4020, H: 6154 },
+        { model: "LVN-7200", flow: 571.7, fanQty: 1, fanAirFlow: 234720, fanPower: 14.92, pipeDN: "150A", shipWeight: 4780, operWeight: 14210, A: 6105, B: 4020, H: 6198 },
+        { model: "LVN-7250", flow: 615.4, fanQty: 1, fanAirFlow: 253080, fanPower: 18.65, pipeDN: "150A", shipWeight: 4980, operWeight: 14410, A: 6105, B: 4020, H: 6247 },
+        { model: "LVN-7300", flow: 653.6, fanQty: 1, fanAirFlow: 268920, fanPower: 22.38, pipeDN: "150A", shipWeight: 5080, operWeight: 14510, A: 6105, B: 4020, H: 6274 },
+        { model: "LVN-7400", flow: 718.4, fanQty: 1, fanAirFlow: 300960, fanPower: 29.84, pipeDN: "150A", shipWeight: 5180, operWeight: 14610, A: 6105, B: 4020, H: 6434 },
+        { model: "LVN-8200", flow: 556.1, fanQty: 1, fanAirFlow: 250920, fanPower: 14.92, pipeDN: "150A", shipWeight: 4926, operWeight: 14376, A: 6305, B: 4420, H: 6249 },
+        { model: "LVN-8250", flow: 658.3, fanQty: 1, fanAirFlow: 270720, fanPower: 18.65, pipeDN: "150A", shipWeight: 5126, operWeight: 14576, A: 6305, B: 4420, H: 6325 },
+        { model: "LVN-8300", flow: 698.9, fanQty: 1, fanAirFlow: 287280, fanPower: 22.38, pipeDN: "150A", shipWeight: 5326, operWeight: 14776, A: 6305, B: 4420, H: 6432 },
+        { model: "LVN-8400", flow: 768.3, fanQty: 1, fanAirFlow: 321480, fanPower: 29.84, pipeDN: "200A", shipWeight: 5426, operWeight: 14876, A: 6305, B: 4420, H: 6492 },
+        { model: "LVN-8500", flow: 827.6, fanQty: 1, fanAirFlow: 347400, fanPower: 37.3, pipeDN: "200A", shipWeight: 5526, operWeight: 14976, A: 6305, B: 4420, H: 6492 },
+        { model: "LVN-9250", flow: 692.6, fanQty: 1, fanAirFlow: 280800, fanPower: 18.65, pipeDN: "150A", shipWeight: 5306, operWeight: 16369, A: 6305, B: 4820, H: 6325 },
+        { model: "LVN-9300", flow: 735.5, fanQty: 1, fanAirFlow: 297720, fanPower: 22.38, pipeDN: "200A", shipWeight: 5506, operWeight: 16569, A: 6305, B: 4820, H: 6432 },
+        { model: "LVN-9400", flow: 808.9, fanQty: 1, fanAirFlow: 333000, fanPower: 29.84, pipeDN: "200A", shipWeight: 5706, operWeight: 19769, A: 6305, B: 4820, H: 6492 },
+        { model: "LVN-9500", flow: 870.5, fanQty: 1, fanAirFlow: 359280, fanPower: 37.3, pipeDN: "200A", shipWeight: 5806, operWeight: 19869, A: 6305, B: 4820, H: 6492 },
+        { model: "LVN-9600", flow: 924.3, fanQty: 1, fanAirFlow: 386280, fanPower: 44.76, pipeDN: "200A", shipWeight: 5906, operWeight: 19969, A: 6305, B: 4820, H: 6194 }
+      ]
+    },
+    // ------------------------------------------------------------------
+    // SOURCE: Liang Chi LBC Series round counterflow cooling tower
+    // From: catalogue_thap_giai_nhiet_Liang_Chi_loai_tron__LBC_.pdf
+    // Round (circular) vacuum-formed counterflow cooling tower, single fan/
+    // single cell design. Flow converted from L/min to m3/h (x0.06). Fan air
+    // flow converted from m3/min to m3/h (x60). Fan power converted from HP
+    // to kW (x0.746). Dims A=B=tower diameter (mm, round unit), H=height (mm).
+    // No circulating pump supplied (customer-supplied), matching LVN series.
+    // ------------------------------------------------------------------
+    {
+      id: "liangchi-lbc",
+      kind: "coolingtower",
+      manufacturer: "Liang Chi (Cong ty TNHH CN Liang Chi II, Việt Nam)",
+      name: { vi: "Tháp giải nhiệt Liang Chi LBC (dạng tròn)", en: "Liang Chi LBC Series Round Cooling Tower" },
+      shortDesc: {
+        vi: "Tháp giải nhiệt dạng tròn, dòng chảy ngược, hiệu quả chi phí cho công suất nhỏ và vừa.",
+        en: "Round-shaped counterflow cooling tower, cost-effective for small-to-medium capacity."
+      },
+      designCondition: { vi: "Nhiệt độ nước vào 37°C, nhiệt độ nước ra 32°C, nhiệt độ bầu ướt không khí 27°C. Lưu lượng định mức trong bảng là công suất làm mát ở điều kiện này.", en: "Inlet water 37°C, outlet water 32°C, air wet bulb 27°C. The nominal flow rate in the table is the cooling capacity at this condition." },
+      notes: {
+        vi: [
+          "Số liệu có thể thay đổi -- catalogue ghi rõ nhà sản xuất có quyền thay đổi quy cách và kích thước kỹ thuật mà không cần thông báo trước.",
+          "Không bao gồm bơm tuần hoàn (khách hàng tự cung cấp)."
+        ],
+        en: [
+          "Specifications may change -- the manufacturer reserves the right to change specifications and dimensions without notice.",
+          "Does not include a circulating pump (customer-supplied)."
+        ]
+      },
+      // model, nominal water flow (m3/h) [converted from L/min x0.06], fan qty, fan air flow
+      // (m3/h) [converted from m3/min x60], fan power (kW) [converted from HP x0.746],
+      // pipeDN (inlet/outlet pipe size), shipping weight (kg, "dry"), operating weight (kg),
+      // dims A=B=tower diameter (mm), H=height (mm)
+      models: [
+        { model: "LBC-3", flow: 2.3, fanQty: 1, fanAirFlow: 1500, fanPower: 0.12, pipeDN: "40mm", shipWeight: 36, operWeight: 82, A: 750, B: 750, H: 1410 },
+        { model: "LBC-5", flow: 3.9, fanQty: 1, fanAirFlow: 3600, fanPower: 0.12, pipeDN: "40mm", shipWeight: 40, operWeight: 115, A: 750, B: 750, H: 1410 },
+        { model: "LBC-8", flow: 6.2, fanQty: 1, fanAirFlow: 4500, fanPower: 0.12, pipeDN: "40mm", shipWeight: 50, operWeight: 127, A: 860, B: 860, H: 1690 },
+        { model: "LBC-10", flow: 7.8, fanQty: 1, fanAirFlow: 6000, fanPower: 0.19, pipeDN: "40mm", shipWeight: 55, operWeight: 200, A: 860, B: 860, H: 1690 },
+        { model: "LBC-15", flow: 11.7, fanQty: 1, fanAirFlow: 8100, fanPower: 0.19, pipeDN: "50mm", shipWeight: 80, operWeight: 260, A: 1170, B: 1170, H: 1940 },
+        { model: "LBC-20", flow: 15.6, fanQty: 1, fanAirFlow: 10800, fanPower: 0.37, pipeDN: "50mm", shipWeight: 90, operWeight: 330, A: 1170, B: 1170, H: 1940 },
+        { model: "LBC-25", flow: 19.5, fanQty: 1, fanAirFlow: 12000, fanPower: 0.56, pipeDN: "65mm", shipWeight: 103, operWeight: 403, A: 1380, B: 1380, H: 1800 },
+        { model: "LBC-30", flow: 23.4, fanQty: 1, fanAirFlow: 13500, fanPower: 0.75, pipeDN: "65mm", shipWeight: 115, operWeight: 488, A: 1580, B: 1580, H: 1735 },
+        { model: "LBC-40", flow: 31.2, fanQty: 1, fanAirFlow: 16800, fanPower: 0.93, pipeDN: "65mm", shipWeight: 168, operWeight: 515, A: 1820, B: 1820, H: 1890 },
+        { model: "LBC-50", flow: 39.0, fanQty: 1, fanAirFlow: 19800, fanPower: 0.93, pipeDN: "80mm", shipWeight: 197, operWeight: 597, A: 2000, B: 2000, H: 1890 },
+        { model: "LBC-60", flow: 46.8, fanQty: 1, fanAirFlow: 25200, fanPower: 0.93, pipeDN: "80mm", shipWeight: 229, operWeight: 669, A: 2000, B: 2000, H: 1895 },
+        { model: "LBC-70", flow: 54.6, fanQty: 1, fanAirFlow: 30000, fanPower: 0.93, pipeDN: "100mm", shipWeight: 277, operWeight: 707, A: 2175, B: 2175, H: 2045 },
+        { model: "LBC-80", flow: 62.4, fanQty: 1, fanAirFlow: 32400, fanPower: 1.49, pipeDN: "100mm", shipWeight: 292, operWeight: 722, A: 2175, B: 2175, H: 2045 },
+        { model: "LBC-100", flow: 78.0, fanQty: 1, fanAirFlow: 42000, fanPower: 2.24, pipeDN: "100mm", shipWeight: 403, operWeight: 1073, A: 2650, B: 2650, H: 2235 },
+        { model: "LBC-125", flow: 97.5, fanQty: 1, fanAirFlow: 49800, fanPower: 2.24, pipeDN: "125mm", shipWeight: 466, operWeight: 1356, A: 3050, B: 3050, H: 2260 },
+        { model: "LBC-150", flow: 117.0, fanQty: 1, fanAirFlow: 57000, fanPower: 3.73, pipeDN: "125mm", shipWeight: 625, operWeight: 2605, A: 3300, B: 3300, H: 2315 },
+        { model: "LBC-175", flow: 136.5, fanQty: 1, fanAirFlow: 69000, fanPower: 3.73, pipeDN: "125mm", shipWeight: 713, operWeight: 2676, A: 3300, B: 3300, H: 2515 },
+        { model: "LBC-200", flow: 156.0, fanQty: 1, fanAirFlow: 75000, fanPower: 3.73, pipeDN: "150mm", shipWeight: 870, operWeight: 3460, A: 3770, B: 3770, H: 2990 },
+        { model: "LBC-225", flow: 175.5, fanQty: 1, fanAirFlow: 105000, fanPower: 5.59, pipeDN: "150mm", shipWeight: 960, operWeight: 3520, A: 3770, B: 3770, H: 3190 },
+        { model: "LBC-250", flow: 195.0, fanQty: 1, fanAirFlow: 105000, fanPower: 5.59, pipeDN: "200mm", shipWeight: 1030, operWeight: 3570, A: 3770, B: 3770, H: 3190 },
+        { model: "LBC-300", flow: 234.0, fanQty: 1, fanAirFlow: 132000, fanPower: 7.46, pipeDN: "200mm", shipWeight: 1283, operWeight: 4543, A: 4440, B: 4440, H: 3350 },
+        { model: "LBC-350", flow: 273.0, fanQty: 1, fanAirFlow: 132000, fanPower: 7.46, pipeDN: "200mm", shipWeight: 1362, operWeight: 4620, A: 4790, B: 4790, H: 3390 },
+        { model: "LBC-400", flow: 312.0, fanQty: 1, fanAirFlow: 156000, fanPower: 11.19, pipeDN: "200mm", shipWeight: 2171, operWeight: 6811, A: 5180, B: 5180, H: 3890 },
+        { model: "LBC-500", flow: 390.0, fanQty: 1, fanAirFlow: 156000, fanPower: 11.19, pipeDN: "250mm", shipWeight: 2428, operWeight: 7068, A: 5580, B: 5580, H: 3930 },
+        { model: "LBC-600", flow: 468.0, fanQty: 1, fanAirFlow: 225000, fanPower: 14.92, pipeDN: "250mm", shipWeight: 3364, operWeight: 10774, A: 6600, B: 6600, H: 4360 },
+        { model: "LBC-700", flow: 546.0, fanQty: 1, fanAirFlow: 225000, fanPower: 14.92, pipeDN: "250mm", shipWeight: 3567, operWeight: 10967, A: 6600, B: 6600, H: 4505 },
+        { model: "LBC-800", flow: 624.0, fanQty: 1, fanAirFlow: 300000, fanPower: 22.38, pipeDN: "300mm", shipWeight: 4380, operWeight: 11980, A: 7600, B: 7600, H: 4945 },
+        { model: "LBC-1000", flow: 780.0, fanQty: 1, fanAirFlow: 300000, fanPower: 22.38, pipeDN: "300mm", shipWeight: 4636, operWeight: 12436, A: 7600, B: 7600, H: 5145 },
+        { model: "LBC-1250", flow: 975.0, fanQty: 1, fanAirFlow: 372000, fanPower: 29.84, pipeDN: "300mm", shipWeight: 6554, operWeight: 26064, A: 8430, B: 8430, H: 5870 },
+        { model: "LBC-1500", flow: 1170.0, fanQty: 1, fanAirFlow: 450000, fanPower: 37.3, pipeDN: "350mm", shipWeight: 7000, operWeight: 26512, A: 8430, B: 8430, H: 6095 }
+      ]
+    },
   ]
 };
 

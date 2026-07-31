@@ -1,4 +1,4 @@
-const BUILD_VERSION = "2026-07-30.3";
+const BUILD_VERSION = "2026-07-31.1";
 
 // ---------------------------------------------------------------------
 // i18n
@@ -48,7 +48,21 @@ const STR = {
   designCondition:{ vi: "\u0110i\u1ec1u ki\u1ec7n thi\u1ebft k\u1ebf (c\u1ed1 \u0111\u1ecbnh)", en: "Design condition (fixed)" },
   requiredFlow:  { vi: "L\u01b0u l\u01b0\u1ee3ng n\u01b0\u1edbc y\u00eau c\u1ea7u (m\u00b3/h)", en: "Required water flow (m\u00b3/h)" },
   nominalFlow:   { vi: "L\u01b0u l\u01b0\u1ee3ng n\u01b0\u1edbc \u0111\u1ecbnh m\u1ee9c (m\u00b3/h)", en: "Nominal water flow (m\u00b3/h)" },
-  catalogueNotes:{ vi: "Ghi ch\u00fa t\u1eeb catalogue", en: "Catalogue notes" }
+  catalogueNotes:{ vi: "Ghi ch\u00fa t\u1eeb catalogue", en: "Catalogue notes" },
+  noCorrectionNote:{ vi: "T\u00e0i li\u1ec7u n\u00e0y kh\u00f4ng cung c\u1ea5p b\u1ea3ng h\u1ec7 s\u1ed1 hi\u1ec7u ch\u1ec9nh theo nhi\u1ec7t \u0111\u1ed9 ng\u01b0ng t\u1ee5/b\u1ea7u \u01b0\u1edbt \u2014 ch\u1ecdn model tr\u1ef1c ti\u1ebfp theo c\u00f4ng su\u1ea5t nhi\u1ec7t th\u1ea3i c\u01a1 b\u1ea3n.", en: "This catalogue does not publish a condensing/wet-bulb correction table \u2014 model is selected directly against the base heat rejection rating." },
+  addToQuote:    { vi: "Th\u00eam v\u00e0o b\u00e1o c\u00e1o \u0111\u1ec3 h\u1ecfi gi\u00e1", en: "Add to quote report" },
+  addedToQuote:  { vi: "\u2713 \u0110\u00e3 th\u00eam v\u00e0o b\u00e1o c\u00e1o", en: "\u2713 Added to report" },
+  quoteReport:   { vi: "B\u00e1o c\u00e1o thi\u1ebft b\u1ecb \u0111\u00e3 ch\u1ecdn", en: "Selected equipment report" },
+  quoteEmpty:    { vi: "Ch\u01b0a c\u00f3 thi\u1ebft b\u1ecb n\u00e0o trong b\u00e1o c\u00e1o. V\u00e0o trang th\u00f4ng s\u1ed1 c\u1ee7a m\u1ed9t model v\u00e0 b\u1ea5m \u201cTh\u00eam v\u00e0o b\u00e1o c\u00e1o\u201d.", en: "No equipment in the report yet. Open a model's spec page and tap \u201cAdd to quote report\u201d." },
+  colBrand:      { vi: "H\u00e3ng", en: "Brand" },
+  colModel:      { vi: "Model", en: "Model" },
+  colSpec:       { vi: "Th\u00f4ng s\u1ed1 ch\u00ednh", en: "Key spec" },
+  colQty:        { vi: "S\u1ed1 l\u01b0\u1ee3ng", en: "Quantity" },
+  removeItem:    { vi: "X\u00f3a", en: "Remove" },
+  exportCsv:     { vi: "Xu\u1ea5t file CSV (Excel)", en: "Export CSV (Excel)" },
+  exportPrint:   { vi: "In / L\u01b0u PDF", en: "Print / Save PDF" },
+  clearAll:      { vi: "X\u00f3a t\u1ea5t c\u1ea3", en: "Clear all" },
+  quoteNoteLabel:{ vi: "Ghi ch\u00fa th\u00eam (t\u00f9y ch\u1ecdn)", en: "Additional note (optional)" }
 };
 
 function t(key) { return (STR[key] && STR[key][LANG]) || key; }
@@ -65,9 +79,11 @@ const BRANDS = {
   wxr:       { badge: "WXR", color: "#f5a623", name: "W.X.R\u00ae (Wanxiang Refrigeration)" },
   hengan:    { badge: "HA",  color: "#ff6b4a", name: "Heng An Cooling" },
   oceanblue: { badge: "OB",  color: "#3ecbe0", name: "OceanBlue (Yantai OceanBlue Refrigeration)" },
-  evapco:    { badge: "EVP", color: "#00a19a", name: "EVAPCO, Inc." }
+  evapco:    { badge: "EVP", color: "#00a19a", name: "EVAPCO, Inc." },
+  bac:       { badge: "BAC", color: "#1e6fd9", name: "Baltimore Aircoil (BAC)" },
+  liangchi:  { badge: "LC",  color: "#c62828", name: "Liang Chi" }
 };
-const BRAND_ORDER = ["wxr", "hengan", "oceanblue", "evapco"];
+const BRAND_ORDER = ["wxr", "hengan", "oceanblue", "evapco", "bac", "liangchi"];
 function brandKeyOf(src) {
   const prefix = src.id.split("-")[0];
   return BRANDS[prefix] ? prefix : "other";
@@ -144,6 +160,60 @@ function interpolate2D(table, condTemp, wetBulb) {
 }
 
 // ---------------------------------------------------------------------
+// Quote / report list (persisted in localStorage)
+// ---------------------------------------------------------------------
+const QUOTE_KEY = "quoteList";
+
+function loadQuoteList() {
+  try {
+    const raw = localStorage.getItem(QUOTE_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch (e) { return []; }
+}
+function saveQuoteList(list) {
+  try { localStorage.setItem(QUOTE_KEY, JSON.stringify(list)); } catch (e) {}
+}
+function addToQuoteList(sourceId, model, qty) {
+  const list = loadQuoteList();
+  const existing = list.find(it => it.sourceId === sourceId && it.model === model);
+  if (existing) {
+    existing.qty = (parseInt(existing.qty, 10) || 0) + (parseInt(qty, 10) || 1);
+  } else {
+    list.push({ sourceId, model, qty: parseInt(qty, 10) || 1 });
+  }
+  saveQuoteList(list);
+  refreshQuoteBadge();
+}
+function removeFromQuoteList(index) {
+  const list = loadQuoteList();
+  list.splice(index, 1);
+  saveQuoteList(list);
+  refreshQuoteBadge();
+}
+function updateQuoteQty(index, qty) {
+  const list = loadQuoteList();
+  if (list[index]) list[index].qty = Math.max(1, parseInt(qty, 10) || 1);
+  saveQuoteList(list);
+}
+function clearQuoteList() {
+  saveQuoteList([]);
+  refreshQuoteBadge();
+}
+function refreshQuoteBadge() {
+  const el = document.getElementById("quoteCount");
+  if (el) el.textContent = String(loadQuoteList().length);
+}
+// key-spec summary line per model, reusing whatever fields that model kind has
+function quoteKeySpec(src, m) {
+  if (src.kind === "condenser") {
+    return `${m.heatRejection} kW${m.ammonia != null ? ", NH3 " + m.ammonia + "kg" : ""}, ${m.A}\u00d7${m.B}\u00d7${m.H}mm`;
+  } else if (src.kind === "coolingtower") {
+    return `${m.flow != null ? m.flow + " m\u00b3/h" : ""}, ${m.A}\u00d7${m.B}\u00d7${m.H}mm`;
+  }
+  return "";
+}
+
+// ---------------------------------------------------------------------
 // Rendering
 // ---------------------------------------------------------------------
 const appEl = document.getElementById("app");
@@ -154,6 +224,7 @@ function render(view) {
   if (view.name === "brand") return renderBrand(view.brandId);
   if (view.name === "source") return renderSource(view.sourceId);
   if (view.name === "spec") return renderSpec(view.sourceId, view.model);
+  if (view.name === "report") return renderReport();
 }
 
 function renderHome() {
@@ -236,7 +307,7 @@ function renderSource(sourceId) {
       </div>
     </div>`;
 
-  if (src.kind === "condenser") {
+  if (src.kind === "condenser" && src.correctionTables) {
     html += `
       <div class="panel">
         <h3>${t("selectionProcedure")}</h3>
@@ -256,6 +327,25 @@ function renderSource(sourceId) {
         <input type="number" id="wetBulb" step="0.1" placeholder="e.g. 29">
         <button class="primary-btn" id="calcCondBtn">${t("calculate")}</button>
         <div id="condResult"></div>
+      </div>
+      <div class="panel">
+        <h3>${t("allModels")}</h3>
+        ${renderCondenserTable(src)}
+      </div>
+    `;
+  } else if (src.kind === "condenser" && !src.correctionTables) {
+    html += `
+      <div class="panel">
+        <h3>${t("selectionProcedure")}</h3>
+        <ol>${src.selectionProcedure[LANG].map(l => `<li>${l}</li>`).join("")}</ol>
+      </div>
+      <div class="panel">
+        <h3>${t("findByCap")}</h3>
+        <p class="muted small">${t("noCorrectionNote")}</p>
+        <label>${t("requiredHeatRej")}</label>
+        <input type="number" id="reqLoadDirect" min="0" step="1" placeholder="e.g. 900">
+        <button class="primary-btn" id="calcCondDirectBtn">${t("calculate")}</button>
+        <div id="condDirectResult"></div>
       </div>
       <div class="panel">
         <h3>${t("allModels")}</h3>
@@ -291,8 +381,10 @@ function renderSource(sourceId) {
 
   appEl.querySelector(".back-btn").addEventListener("click", () => render({ name: "brand", brandId: brandKeyOf(src) }));
 
-  if (src.kind === "condenser") {
+  if (src.kind === "condenser" && src.correctionTables) {
     document.getElementById("calcCondBtn").addEventListener("click", () => calcCondenser(src));
+  } else if (src.kind === "condenser" && !src.correctionTables) {
+    document.getElementById("calcCondDirectBtn").addEventListener("click", () => calcCondenserDirect(src));
   } else if (src.kind === "coolingtower") {
     document.getElementById("calcTowerBtn").addEventListener("click", () => calcTower(src));
   }
@@ -377,6 +469,28 @@ function calcCondenser(src) {
   if (btn) btn.addEventListener("click", () => render({ name: "spec", sourceId: src.id, model: fit.model }));
 }
 
+function calcCondenserDirect(src) {
+  const load = parseFloat(document.getElementById("reqLoadDirect").value);
+  const resEl = document.getElementById("condDirectResult");
+  if (!load || load <= 0) { resEl.innerHTML = ""; return; }
+
+  const sorted = [...src.models].sort((a, b) => a.heatRejection - b.heatRejection);
+  const fit = sorted.find(m => m.heatRejection >= load);
+
+  if (!fit) {
+    resEl.innerHTML = `<div class="result-box warn">${t("noModelFits")}</div>`;
+    return;
+  }
+  resEl.innerHTML = `
+    <div class="result-box ok">
+      <div><strong>${t("selectedModel")}:</strong> ${fit.model}</div>
+      <div>${t("heatRejection")}: ${fit.heatRejection} kW</div>
+      <button class="link-btn" id="viewSpecBtn">${t("viewFullSpec")} \u2192</button>
+    </div>`;
+  document.getElementById("viewSpecBtn").addEventListener("click", () =>
+    render({ name: "spec", sourceId: src.id, model: fit.model }));
+}
+
 function calcTower(src) {
   const req = parseFloat(document.getElementById("reqFlow").value);
   const resEl = document.getElementById("towerResult");
@@ -423,9 +537,9 @@ function renderSpec(sourceId, modelName) {
   if (src.kind === "condenser") {
     const rows = [
       specRow(t("heatRejection"), `${m.heatRejection} kW`),
-      specRow(t("fan"), `${t("qty")} ${m.fanQty} \u00d7 ${t("airFlow")} ${m.fanAirFlow} m\u00b3/h, ${t("power")} ${m.fanPower} kW`),
-      specRow(t("pump"), `${t("qty")} ${m.pumpQty || 1} \u00d7 ${t("flow")} ${m.pumpFlow} m\u00b3/h, ${t("power")} ${m.pumpPower} kW`)
+      specRow(t("fan"), `${t("qty")} ${m.fanQty} \u00d7 ${t("airFlow")} ${m.fanAirFlow} m\u00b3/h, ${t("power")} ${m.fanPower} kW`)
     ];
+    if (m.pumpFlow != null) rows.push(specRow(t("pump"), `${t("qty")} ${m.pumpQty || 1} \u00d7 ${t("flow")} ${m.pumpFlow} m\u00b3/h, ${t("power")} ${m.pumpPower} kW`));
     if (m.ammonia != null) rows.push(specRow(t("ammonia"), `${m.ammonia} kg`));
     if (m.pipeDN) rows.push(specRow("DN", m.pipeDN));
     rows.push(specRow(t("dims"), `${m.A}\u00d7${m.B}\u00d7${m.H} mm`));
@@ -436,22 +550,192 @@ function renderSpec(sourceId, modelName) {
       ${specGrid(rows)}
     </div>`;
   } else if (src.kind === "coolingtower") {
+    const towerRows = [
+      specRow(t("nominalFlow"), m.flow != null ? `${m.flow} m\u00b3/h` : "\u2014"),
+      specRow(t("fan"), `${t("qty")} ${m.fanQty} \u00d7 ${t("airFlow")} ${m.fanAirFlow} m\u00b3/h, ${t("power")} ${m.fanPower} kW`)
+    ];
+    if (m.pumpFlow != null) towerRows.push(specRow(t("pump"), `${t("qty")} ${m.pumpQty || 1} \u00d7 ${t("flow")} ${m.pumpFlow} m\u00b3/h, ${t("power")} ${m.pumpPower} kW`));
+    if (m.pipeDN) towerRows.push(specRow("DN", m.pipeDN));
+    towerRows.push(specRow(t("dims"), `${m.A}\u00d7${m.B}\u00d7${m.H} mm`));
+    towerRows.push(specRow(t("shipWeight"), `${m.shipWeight} kg`));
+    towerRows.push(specRow(t("operWeight"), `${m.operWeight} kg`));
     html += `<div class="panel nameplate">
       <span class="rivet tl"></span><span class="rivet tr"></span><span class="rivet bl"></span><span class="rivet br"></span>
-      ${specGrid([
-      specRow(t("nominalFlow"), m.flow != null ? `${m.flow} m\u00b3/h` : "\u2014"),
-      specRow(t("fan"), `${t("qty")} ${m.fanQty} \u00d7 ${t("airFlow")} ${m.fanAirFlow} m\u00b3/h, ${t("power")} ${m.fanPower} kW`),
-      specRow(t("pump"), `${t("qty")} ${m.pumpQty || 1} \u00d7 ${t("flow")} ${m.pumpFlow} m\u00b3/h, ${t("power")} ${m.pumpPower} kW`),
-      specRow(t("dims"), `${m.A}\u00d7${m.B}\u00d7${m.H} mm`),
-      specRow(t("shipWeight"), `${m.shipWeight} kg`),
-      specRow(t("operWeight"), `${m.operWeight} kg`)
-    ])}
+      ${specGrid(towerRows)}
       <h4>${t("designCondition")}</h4>
       <p>${src.designCondition[LANG]}</p>
     </div>`;
   }
+
+  html += `
+    <div class="panel">
+      <h3>${t("addToQuote")}</h3>
+      <div class="qty-row">
+        <label>${t("qty")}</label>
+        <input type="number" id="quoteQty" min="1" step="1" value="1">
+        <button class="primary-btn" id="addQuoteBtn">${t("addToQuote")}</button>
+      </div>
+      <div id="addQuoteMsg"></div>
+    </div>
+  `;
+
   appEl.innerHTML = html;
   appEl.querySelector(".back-btn").addEventListener("click", () => render({ name: "source", sourceId }));
+  document.getElementById("addQuoteBtn").addEventListener("click", () => {
+    const qty = document.getElementById("quoteQty").value;
+    addToQuoteList(sourceId, m.model, qty);
+    document.getElementById("addQuoteMsg").innerHTML = `<div class="result-box ok">${t("addedToQuote")}</div>`;
+  });
+}
+
+// ---------------------------------------------------------------------
+// Quote report view
+// ---------------------------------------------------------------------
+function renderReport() {
+  const list = loadQuoteList();
+  let html = `<button class="back-btn">${t("back")}</button>
+    <h2>${t("quoteReport")}</h2>`;
+
+  if (list.length === 0) {
+    html += `<div class="panel empty-note">${t("quoteEmpty")}</div>`;
+    appEl.innerHTML = html;
+    appEl.querySelector(".back-btn").addEventListener("click", () => render({ name: "home" }));
+    return;
+  }
+
+  const rows = list.map((it, idx) => {
+    const src = DATABASE.sources.find(s => s.id === it.sourceId);
+    const m = src ? src.models.find(mm => mm.model === it.model) : null;
+    const brandName = src ? (BRANDS[brandKeyOf(src)] || {}).name || brandKeyOf(src) : it.sourceId;
+    const specStr = (src && m) ? quoteKeySpec(src, m) : "\u2014";
+    return `
+      <tr>
+        <td>${idx + 1}</td>
+        <td>${brandName}</td>
+        <td>${it.model}</td>
+        <td>${specStr}</td>
+        <td><input type="number" min="1" step="1" class="qty-input" data-idx="${idx}" value="${it.qty}"></td>
+        <td><button class="remove-btn" data-idx="${idx}">${t("removeItem")}</button></td>
+      </tr>`;
+  }).join("");
+
+  html += `
+    <div class="panel">
+      <div class="quote-table-wrap">
+        <table>
+          <thead><tr><th>#</th><th>${t("colBrand")}</th><th>${t("colModel")}</th><th>${t("colSpec")}</th><th>${t("colQty")}</th><th></th></tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>
+    </div>
+    <div class="panel">
+      <label>${t("quoteNoteLabel")}</label>
+      <textarea id="quoteNote" rows="3" style="width:100%"></textarea>
+    </div>
+    <div class="panel" style="display:flex; gap:10px; flex-wrap:wrap;">
+      <button class="primary-btn" id="exportCsvBtn">${t("exportCsv")}</button>
+      <button class="primary-btn" id="exportPrintBtn">${t("exportPrint")}</button>
+      <button class="remove-btn" id="clearAllBtn">${t("clearAll")}</button>
+    </div>
+  `;
+
+  appEl.innerHTML = html;
+  appEl.querySelector(".back-btn").addEventListener("click", () => render({ name: "home" }));
+
+  appEl.querySelectorAll(".qty-input").forEach(inp => {
+    inp.addEventListener("change", () => {
+      updateQuoteQty(parseInt(inp.dataset.idx, 10), inp.value);
+    });
+  });
+  appEl.querySelectorAll(".remove-btn[data-idx]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      removeFromQuoteList(parseInt(btn.dataset.idx, 10));
+      renderReport();
+    });
+  });
+  document.getElementById("clearAllBtn").addEventListener("click", () => {
+    clearQuoteList();
+    renderReport();
+  });
+  document.getElementById("exportCsvBtn").addEventListener("click", () => exportQuoteCsv());
+  document.getElementById("exportPrintBtn").addEventListener("click", () => exportQuotePrint());
+}
+
+function buildQuoteRows() {
+  const list = loadQuoteList();
+  return list.map((it, idx) => {
+    const src = DATABASE.sources.find(s => s.id === it.sourceId);
+    const m = src ? src.models.find(mm => mm.model === it.model) : null;
+    const brandName = src ? (BRANDS[brandKeyOf(src)] || {}).name || brandKeyOf(src) : it.sourceId;
+    const specStr = (src && m) ? quoteKeySpec(src, m) : "";
+    return { stt: idx + 1, brandName, model: it.model, specStr, qty: it.qty };
+  });
+}
+
+function csvEscape(val) {
+  const s = String(val == null ? "" : val);
+  if (/[",\n]/.test(s)) return `"${s.replace(/"/g, '""')}"`;
+  return s;
+}
+
+function exportQuoteCsv() {
+  const rows = buildQuoteRows();
+  const note = (document.getElementById("quoteNote") || {}).value || "";
+  const header = ["STT", t("colBrand"), t("colModel"), t("colSpec"), t("colQty")];
+  const lines = [header.map(csvEscape).join(",")];
+  rows.forEach(r => {
+    lines.push([r.stt, r.brandName, r.model, r.specStr, r.qty].map(csvEscape).join(","));
+  });
+  if (note.trim()) {
+    lines.push("");
+    lines.push(csvEscape(t("quoteNoteLabel") + ": " + note));
+  }
+  const csvContent = "\uFEFF" + lines.join("\r\n");
+  const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  const dateStr = new Date().toISOString().slice(0, 10);
+  a.href = url;
+  a.download = `bao-cao-thiet-bi-${dateStr}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+function exportQuotePrint() {
+  const rows = buildQuoteRows();
+  const note = (document.getElementById("quoteNote") || {}).value || "";
+  const dateStr = new Date().toLocaleDateString(LANG === "vi" ? "vi-VN" : "en-US");
+  const rowsHtml = rows.map(r => `
+    <tr>
+      <td>${r.stt}</td><td>${r.brandName}</td><td>${r.model}</td><td>${r.specStr}</td><td style="text-align:center">${r.qty}</td>
+    </tr>`).join("");
+  const win = window.open("", "_blank");
+  if (!win) return;
+  win.document.write(`
+    <html><head><title>${t("quoteReport")}</title>
+    <meta charset="UTF-8">
+    <style>
+      body { font-family: Arial, sans-serif; padding: 24px; color: #111; }
+      h1 { font-size: 20px; }
+      table { width: 100%; border-collapse: collapse; margin-top: 16px; }
+      th, td { border: 1px solid #999; padding: 8px; font-size: 13px; text-align: left; }
+      th { background: #eee; }
+      .note { margin-top: 16px; white-space: pre-wrap; font-size: 13px; }
+    </style>
+    </head><body>
+    <h1>${t("quoteReport")}</h1>
+    <div>${dateStr}</div>
+    <table>
+      <thead><tr><th>#</th><th>${t("colBrand")}</th><th>${t("colModel")}</th><th>${t("colSpec")}</th><th>${t("colQty")}</th></tr></thead>
+      <tbody>${rowsHtml}</tbody>
+    </table>
+    ${note.trim() ? `<div class="note"><strong>${t("quoteNoteLabel")}:</strong><br>${note.replace(/</g, "&lt;")}</div>` : ""}
+    <script>window.onload = () => window.print();<\/script>
+    </body></html>
+  `);
+  win.document.close();
 }
 
 // ---------------------------------------------------------------------
@@ -461,6 +745,8 @@ function refreshLangUI() {
   document.getElementById("langToggle").textContent = LANG === "vi" ? "EN" : "VI";
   document.getElementById("appTitle").textContent = t("appTitle");
 }
+
+document.getElementById("quoteToggle").addEventListener("click", () => render({ name: "report" }));
 
 document.getElementById("langToggle").addEventListener("click", () => {
   LANG = LANG === "vi" ? "en" : "vi";
@@ -474,6 +760,7 @@ const origRender = render;
 render = function (view) { currentView = view; origRender(view); };
 
 refreshLangUI();
+refreshQuoteBadge();
 render({ name: "home" });
 
 document.getElementById("buildVersion").textContent = "build " + BUILD_VERSION;
