@@ -1,4 +1,4 @@
-const BUILD_VERSION = "2026-07-31.3";
+const BUILD_VERSION = "2026-08-01.1";
 
 // ---------------------------------------------------------------------
 // i18n
@@ -78,7 +78,18 @@ const STR = {
   fullSpecNote:  { vi: "\u0110\u1ea7y \u0111\u1ee7 th\u00f4ng s\u1ed1", en: "Full specification" },
   exportWord:    { vi: "Xu\u1ea5t file Word (.doc)", en: "Export Word (.doc)" },
   disclaimerLabel:{ vi: "L\u01b0u \u00fd", en: "Note" },
-  disclaimerText:{ vi: "S\u1ed1 li\u1ec7u \u0111\u01b0\u1ee3c tr\u00edch t\u1eeb catalogue nh\u00e0 s\u1ea3n xu\u1ea5t. \u0110\u1ec1 ngh\u1ecb nh\u00e0 cung c\u1ea5p x\u00e1c nh\u1eadn l\u1ea1i th\u00f4ng s\u1ed1 v\u00e0 b\u00e1o gi\u00e1 theo \u0111i\u1ec1u ki\u1ec7n th\u1ef1c t\u1ebf c\u1ee7a d\u1ef1 \u00e1n tr\u01b0\u1edbc khi ch\u1ed1t.", en: "Data transcribed from the manufacturer's catalogue. Please have the supplier confirm the specifications and pricing against actual project conditions before finalizing." }
+  disclaimerText:{ vi: "S\u1ed1 li\u1ec7u \u0111\u01b0\u1ee3c tr\u00edch t\u1eeb catalogue nh\u00e0 s\u1ea3n xu\u1ea5t. \u0110\u1ec1 ngh\u1ecb nh\u00e0 cung c\u1ea5p x\u00e1c nh\u1eadn l\u1ea1i th\u00f4ng s\u1ed1 v\u00e0 b\u00e1o gi\u00e1 theo \u0111i\u1ec1u ki\u1ec7n th\u1ef1c t\u1ebf c\u1ee7a d\u1ef1 \u00e1n tr\u01b0\u1edbc khi ch\u1ed1t.", en: "Data transcribed from the manufacturer's catalogue. Please have the supplier confirm the specifications and pricing against actual project conditions before finalizing." },
+  companyName:   { vi: "\u0110\u01a1n v\u1ecb h\u1ecfi gi\u00e1 (c\u00f4ng ty)", en: "Requesting company" },
+  preparedByPhone:{ vi: "S\u0110T li\u00ean h\u1ec7", en: "Contact phone" },
+  preparedByEmail:{ vi: "Email li\u00ean h\u1ec7", en: "Contact email" },
+  reqConditionLabel:{ vi: "\u0110i\u1ec1u ki\u1ec7n / y\u00eau c\u1ea7u thi\u1ebft k\u1ebf", en: "Design condition / requirement" },
+  reqCapacity:   { vi: "C\u00f4ng su\u1ea5t y\u00eau c\u1ea7u (kW)", en: "Required capacity (kW)" },
+  reqCondTemp:   { vi: "Nhi\u1ec7t \u0111\u1ed9 ng\u01b0ng t\u1ee5 (\u00b0C)", en: "Condensing temperature (\u00b0C)" },
+  reqWetBulb:    { vi: "Nhi\u1ec7t \u0111\u1ed9 b\u1ea7u \u01b0\u1edbt (\u00b0C)", en: "Wet bulb temperature (\u00b0C)" },
+  reqFlow:       { vi: "L\u01b0u l\u01b0\u1ee3ng y\u00eau c\u1ea7u (m\u00b3/h)", en: "Required flow (m\u00b3/h)" },
+  reqOptionalNote:{ vi: "(t\u00f9y ch\u1ecdn \u2014 ghi l\u1ea1i \u0111i\u1ec1u ki\u1ec7n thi\u1ebft k\u1ebf d\u00f9ng \u0111\u1ec3 ch\u1ecdn model n\u00e0y)", en: "(optional \u2014 record the design condition used to select this model)" },
+  docTitle:      { vi: "PHIẾU YÊU CẦU BÁO GIÁ THIẾT BỊ", en: "EQUIPMENT QUOTE REQUEST" },
+  signatureLabel:{ vi: "Ng\u01b0\u1eddi l\u1eadp b\u00e1o c\u00e1o", en: "Prepared by" }
 };
 
 function t(key) { return (STR[key] && STR[key][LANG]) || key; }
@@ -189,13 +200,14 @@ function loadQuoteList() {
 function saveQuoteList(list) {
   try { localStorage.setItem(QUOTE_KEY, JSON.stringify(list)); } catch (e) {}
 }
-function addToQuoteList(sourceId, model, qty) {
+function addToQuoteList(sourceId, model, qty, requirement) {
   const list = loadQuoteList();
   const existing = list.find(it => it.sourceId === sourceId && it.model === model);
   if (existing) {
     existing.qty = (parseInt(existing.qty, 10) || 0) + (parseInt(qty, 10) || 1);
+    if (requirement && Object.keys(requirement).length) existing.requirement = requirement;
   } else {
-    list.push({ sourceId, model, qty: parseInt(qty, 10) || 1, accessories: "" });
+    list.push({ sourceId, model, qty: parseInt(qty, 10) || 1, accessories: "", requirement: requirement || null });
   }
   saveQuoteList(list);
   refreshQuoteBadge();
@@ -228,7 +240,8 @@ function refreshQuoteBadge() {
 // Project info + commercial terms header (persisted separately from the equipment list itself)
 const PROJECT_INFO_KEY = "quoteProjectInfo";
 const PROJECT_INFO_DEFAULTS = {
-  projectName: "", preparedBy: "", installLocation: "", quoteDeadline: "",
+  companyName: "", projectName: "", preparedBy: "", preparedByPhone: "", preparedByEmail: "",
+  installLocation: "", quoteDeadline: "",
   deliveryTerm: "", installationIncluded: "", warrantyReq: ""
 };
 function loadProjectInfo() {
@@ -246,9 +259,18 @@ function updateProjectInfoField(field, value) {
   saveProjectInfo(info);
 }
 // full, non-abbreviated spec lines per model, reusing whatever fields that model kind has
-// (mirrors what renderSpec shows on the model's own detail page)
-function quoteFullSpecLines(src, m) {
+// (mirrors what renderSpec shows on the model's own detail page). "requirement" is the
+// optional design condition the user entered when this item was added to the report.
+function quoteFullSpecLines(src, m, requirement) {
   const lines = [];
+  if (requirement && Object.keys(requirement).length) {
+    const reqParts = [];
+    if (requirement.load != null && requirement.load !== "") reqParts.push(`${t("reqCapacity")} ${requirement.load}`);
+    if (requirement.flow != null && requirement.flow !== "") reqParts.push(`${t("reqFlow")} ${requirement.flow}`);
+    if (requirement.condTemp != null && requirement.condTemp !== "") reqParts.push(`${t("reqCondTemp")} ${requirement.condTemp}`);
+    if (requirement.wetBulb != null && requirement.wetBulb !== "") reqParts.push(`${t("reqWetBulb")} ${requirement.wetBulb}`);
+    if (reqParts.length) lines.push(`${t("reqConditionLabel")}: ${reqParts.join(", ")}`);
+  }
   if (src.kind === "condenser") {
     lines.push(`${t("heatRejection")}: ${m.heatRejection} kW`);
     lines.push(`${t("fan")}: ${t("qty")} ${m.fanQty} \u00d7 ${t("airFlow")} ${m.fanAirFlow} m\u00b3/h, ${t("power")} ${m.fanPower} kW`);
@@ -281,7 +303,7 @@ function render(view) {
   if (view.name === "home") return renderHome();
   if (view.name === "brand") return renderBrand(view.brandId);
   if (view.name === "source") return renderSource(view.sourceId);
-  if (view.name === "spec") return renderSpec(view.sourceId, view.model);
+  if (view.name === "spec") return renderSpec(view.sourceId, view.model, view.reqInfo);
   if (view.name === "report") return renderReport();
 }
 
@@ -524,7 +546,7 @@ function calcCondenser(src) {
     ${modelHtml}
   `;
   const btn = document.getElementById("viewSpecBtn");
-  if (btn) btn.addEventListener("click", () => render({ name: "spec", sourceId: src.id, model: fit.model }));
+  if (btn) btn.addEventListener("click", () => render({ name: "spec", sourceId: src.id, model: fit.model, reqInfo: { load, condTemp: condT, wetBulb: wb } }));
 }
 
 function calcCondenserDirect(src) {
@@ -546,7 +568,7 @@ function calcCondenserDirect(src) {
       <button class="link-btn" id="viewSpecBtn">${t("viewFullSpec")} \u2192</button>
     </div>`;
   document.getElementById("viewSpecBtn").addEventListener("click", () =>
-    render({ name: "spec", sourceId: src.id, model: fit.model }));
+    render({ name: "spec", sourceId: src.id, model: fit.model, reqInfo: { load } }));
 }
 
 function calcTower(src) {
@@ -570,7 +592,7 @@ function calcTower(src) {
       <button class="link-btn" id="viewSpecBtn">${t("viewFullSpec")} \u2192</button>
     </div>`;
   document.getElementById("viewSpecBtn").addEventListener("click", () =>
-    render({ name: "spec", sourceId: src.id, model: fit.model }));
+    render({ name: "spec", sourceId: src.id, model: fit.model, reqInfo: { flow: req } }));
 }
 
 function specRow(label, value) {
@@ -580,9 +602,10 @@ function specGrid(rowsHtml) {
   return `<div class="spec-grid">${rowsHtml.join("")}</div>`;
 }
 
-function renderSpec(sourceId, modelName) {
+function renderSpec(sourceId, modelName, reqInfo) {
   const src = DATABASE.sources.find(s => s.id === sourceId);
   const m = src.models.find(mm => mm.model === modelName);
+  const req = reqInfo || {};
   let html = `<button class="back-btn">${t("back")}</button>
     <div class="detail-header">
       ${brandBadgeHtml(src, "lg")}
@@ -625,6 +648,20 @@ function renderSpec(sourceId, modelName) {
     </div>`;
   }
 
+  const reqInputsHtml = src.kind === "condenser"
+    ? `
+      <label>${t("reqCapacity")}</label>
+      <input type="number" step="any" id="reqCapacityIn" value="${req.load != null ? req.load : ""}">
+      <label>${t("reqCondTemp")}</label>
+      <input type="number" step="any" id="reqCondTempIn" value="${req.condTemp != null ? req.condTemp : ""}">
+      <label>${t("reqWetBulb")}</label>
+      <input type="number" step="any" id="reqWetBulbIn" value="${req.wetBulb != null ? req.wetBulb : ""}">
+    `
+    : `
+      <label>${t("reqFlow")}</label>
+      <input type="number" step="any" id="reqFlowIn" value="${req.flow != null ? req.flow : ""}">
+    `;
+
   html += `
     <div class="panel">
       <h3>${t("addToQuote")}</h3>
@@ -633,6 +670,9 @@ function renderSpec(sourceId, modelName) {
         <input type="number" id="quoteQty" min="1" step="1" value="1">
         <button class="primary-btn" id="addQuoteBtn">${t("addToQuote")}</button>
       </div>
+      <h4>${t("reqConditionLabel")}</h4>
+      <p class="muted small">${t("reqOptionalNote")}</p>
+      ${reqInputsHtml}
       <div id="addQuoteMsg"></div>
     </div>
   `;
@@ -641,7 +681,19 @@ function renderSpec(sourceId, modelName) {
   appEl.querySelector(".back-btn").addEventListener("click", () => render({ name: "source", sourceId }));
   document.getElementById("addQuoteBtn").addEventListener("click", () => {
     const qty = document.getElementById("quoteQty").value;
-    addToQuoteList(sourceId, m.model, qty);
+    const requirement = {};
+    if (src.kind === "condenser") {
+      const load = document.getElementById("reqCapacityIn").value;
+      const condTemp = document.getElementById("reqCondTempIn").value;
+      const wetBulb = document.getElementById("reqWetBulbIn").value;
+      if (load !== "") requirement.load = load;
+      if (condTemp !== "") requirement.condTemp = condTemp;
+      if (wetBulb !== "") requirement.wetBulb = wetBulb;
+    } else if (src.kind === "coolingtower") {
+      const flow = document.getElementById("reqFlowIn").value;
+      if (flow !== "") requirement.flow = flow;
+    }
+    addToQuoteList(sourceId, m.model, qty, Object.keys(requirement).length ? requirement : null);
     document.getElementById("addQuoteMsg").innerHTML = `<div class="result-box ok">${t("addedToQuote")}</div>`;
   });
 }
@@ -659,10 +711,16 @@ function renderReport() {
   html += `
     <div class="panel">
       <h3>${t("projectInfo")}</h3>
+      <label>${t("companyName")}</label>
+      <input type="text" id="projCompanyName" value="${esc(proj.companyName)}">
       <label>${t("projectName")}</label>
       <input type="text" id="projName" value="${esc(proj.projectName)}">
       <label>${t("preparedBy")}</label>
       <input type="text" id="projPreparedBy" value="${esc(proj.preparedBy)}">
+      <label>${t("preparedByPhone")}</label>
+      <input type="text" id="projPreparedByPhone" value="${esc(proj.preparedByPhone)}">
+      <label>${t("preparedByEmail")}</label>
+      <input type="text" id="projPreparedByEmail" value="${esc(proj.preparedByEmail)}">
       <label>${t("installLocation")}</label>
       <input type="text" id="projLocation" value="${esc(proj.installLocation)}">
       <label>${t("quoteDeadline")}</label>
@@ -691,7 +749,7 @@ function renderReport() {
     const src = DATABASE.sources.find(s => s.id === it.sourceId);
     const m = src ? src.models.find(mm => mm.model === it.model) : null;
     const brandName = src ? (BRANDS[brandKeyOf(src)] || {}).name || brandKeyOf(src) : it.sourceId;
-    const specLines = (src && m) ? quoteFullSpecLines(src, m) : ["\u2014"];
+    const specLines = (src && m) ? quoteFullSpecLines(src, m, it.requirement) : ["\u2014"];
     const specHtml = specLines.map(l => `<div>${l}</div>`).join("");
     return `
       <tr>
@@ -757,8 +815,11 @@ function renderReport() {
 
 function wireProjectInfoInputs() {
   const map = {
+    projCompanyName: "companyName",
     projName: "projectName",
     projPreparedBy: "preparedBy",
+    projPreparedByPhone: "preparedByPhone",
+    projPreparedByEmail: "preparedByEmail",
     projLocation: "installLocation",
     projDeadline: "quoteDeadline",
     projDeliveryTerm: "deliveryTerm",
@@ -777,7 +838,7 @@ function buildQuoteRows() {
     const src = DATABASE.sources.find(s => s.id === it.sourceId);
     const m = src ? src.models.find(mm => mm.model === it.model) : null;
     const brandName = src ? (BRANDS[brandKeyOf(src)] || {}).name || brandKeyOf(src) : it.sourceId;
-    const specLines = (src && m) ? quoteFullSpecLines(src, m) : [];
+    const specLines = (src && m) ? quoteFullSpecLines(src, m, it.requirement) : [];
     return { stt: idx + 1, brandName, model: it.model, specLines, qty: it.qty, accessories: it.accessories || "" };
   });
 }
@@ -790,8 +851,11 @@ function csvEscape(val) {
 
 function projectAndTermsLines(proj) {
   const lines = [];
+  if (proj.companyName) lines.push(t("companyName") + ": " + proj.companyName);
   if (proj.projectName) lines.push(t("projectName") + ": " + proj.projectName);
   if (proj.preparedBy) lines.push(t("preparedBy") + ": " + proj.preparedBy);
+  if (proj.preparedByPhone) lines.push(t("preparedByPhone") + ": " + proj.preparedByPhone);
+  if (proj.preparedByEmail) lines.push(t("preparedByEmail") + ": " + proj.preparedByEmail);
   if (proj.installLocation) lines.push(t("installLocation") + ": " + proj.installLocation);
   if (proj.quoteDeadline) lines.push(t("quoteDeadline") + ": " + proj.quoteDeadline);
   if (proj.deliveryTerm) lines.push(t("deliveryTerm") + ": " + proj.deliveryTerm);
@@ -833,11 +897,44 @@ function exportQuoteCsv() {
   URL.revokeObjectURL(url);
 }
 
+function vnDateBlock(d) {
+  if (LANG !== "vi") return d.toLocaleDateString("en-US");
+  return `ng\u00e0y ${d.getDate()} th\u00e1ng ${d.getMonth() + 1} n\u0103m ${d.getFullYear()}`;
+}
+
+// Shared print-quality CSS: Times New Roman, standard body/table/title sizes and A4
+// margins following the common Vietnamese administrative-document convention (Thong tu
+// 01/2011/TT-BNV) -- there isn't a single numbered TCVN standard for RFQ-style document
+// layout specifically, so this follows that widely-used convention rather than a
+// numbered TCVN.
+function documentStyleBlock(pageMarginCss) {
+  return `
+    ${pageMarginCss || ""}
+    body { font-family: 'Times New Roman', Times, serif; font-size: 13pt; color: #000; line-height: 1.4; }
+    .letterhead-company { font-size: 13pt; font-weight: bold; text-transform: uppercase; }
+    h1.doc-title { font-size: 15pt; font-weight: bold; text-align: center; text-transform: uppercase; margin: 18pt 0 6pt; letter-spacing: 0.5px; }
+    .doc-date { text-align: right; font-size: 12pt; font-style: italic; margin-bottom: 10pt; }
+    table.info-table { border-collapse: collapse; margin-bottom: 6pt; }
+    table.info-table td { border: none; padding: 2pt 12pt 2pt 0; font-size: 13pt; vertical-align: top; }
+    table.equip-table { border-collapse: collapse; width: 100%; margin-top: 10pt; }
+    table.equip-table th, table.equip-table td { border: 1px solid #000; padding: 6pt; font-size: 12pt; text-align: left; vertical-align: top; }
+    table.equip-table th { background: #e6e6e6; font-weight: bold; text-align: center; }
+    .note-block { margin-top: 14pt; font-size: 12.5pt; }
+    .disclaimer-block { margin-top: 16pt; font-size: 10.5pt; font-style: italic; color: #333; border-top: 1px solid #999; padding-top: 6pt; }
+    table.signature-block { width: 100%; margin-top: 34pt; border-collapse: collapse; }
+    table.signature-block td { border: none; text-align: center; font-size: 13pt; vertical-align: top; }
+    .signature-role { font-weight: bold; text-transform: uppercase; }
+    .signature-space { height: 56pt; }
+  `;
+}
+
 function buildReportDocumentHtml() {
   const rows = buildQuoteRows();
   const note = (document.getElementById("quoteNote") || {}).value || "";
   const proj = loadProjectInfo();
-  const dateStr = new Date().toLocaleDateString(LANG === "vi" ? "vi-VN" : "en-US");
+  const now = new Date();
+  const dateStr = now.toLocaleDateString(LANG === "vi" ? "vi-VN" : "en-US");
+  const dateBlock = vnDateBlock(now);
   const esc = (s) => String(s || "").replace(/</g, "&lt;");
   const rowsHtml = rows.map(r => `
     <tr>
@@ -847,17 +944,17 @@ function buildReportDocumentHtml() {
       <td>${esc(r.accessories).replace(/\n/g, "<br>")}</td>
     </tr>`).join("");
   const termLines = projectAndTermsLines(proj);
-  const projRows = termLines.map(l => {
+  const infoRows = termLines.map(l => {
     const idx = l.indexOf(":");
     const label = idx >= 0 ? l.slice(0, idx) : l;
     const val = idx >= 0 ? l.slice(idx + 1).trim() : "";
     return `<tr><td><strong>${esc(label)}</strong></td><td>${esc(val)}</td></tr>`;
   }).join("");
-  return { rowsHtml, projRows, note, dateStr };
+  return { rowsHtml, infoRows, note, dateStr, dateBlock, companyName: esc(proj.companyName), preparedBy: esc(proj.preparedBy) };
 }
 
 function exportQuotePrint() {
-  const { rowsHtml, projRows, note, dateStr } = buildReportDocumentHtml();
+  const { rowsHtml, infoRows, note, dateBlock, companyName, preparedBy } = buildReportDocumentHtml();
   const esc = (s) => String(s || "").replace(/</g, "&lt;");
   const win = window.open("", "_blank");
   if (!win) return;
@@ -865,25 +962,29 @@ function exportQuotePrint() {
     <html><head><title>${t("quoteReport")}</title>
     <meta charset="UTF-8">
     <style>
-      body { font-family: Arial, sans-serif; padding: 24px; color: #111; }
-      h1 { font-size: 20px; margin-bottom: 4px; }
-      table { width: 100%; border-collapse: collapse; margin-top: 16px; }
-      th, td { border: 1px solid #999; padding: 8px; font-size: 13px; text-align: left; vertical-align: top; }
-      th { background: #eee; }
-      .proj-table td { border: none; padding: 3px 8px 3px 0; font-size: 13px; }
-      .note { margin-top: 16px; white-space: pre-wrap; font-size: 13px; }
-      .disclaimer { margin-top: 20px; font-size: 11px; color: #666; border-top: 1px solid #ccc; padding-top: 8px; }
+      @page { size: A4; margin: 20mm 20mm 20mm 30mm; }
+      body { padding: 0; }
+      ${documentStyleBlock()}
     </style>
     </head><body>
-    <h1>${t("quoteReport")}</h1>
-    <div>${t("reportDate")}: ${dateStr}</div>
-    ${projRows ? `<table class="proj-table" style="margin-top:12px; border:none;"><tbody>${projRows}</tbody></table>` : ""}
-    <table>
+    ${companyName ? `<div class="letterhead-company">${companyName}</div>` : ""}
+    <h1 class="doc-title">${t("docTitle")}</h1>
+    <div class="doc-date">${dateBlock}</div>
+    ${infoRows ? `<table class="info-table"><tbody>${infoRows}</tbody></table>` : ""}
+    <table class="equip-table">
       <thead><tr><th>#</th><th>${t("colBrand")}</th><th>${t("colModel")}</th><th>${t("fullSpecNote")}</th><th>${t("colQty")}</th><th>${t("colAccessories")}</th></tr></thead>
       <tbody>${rowsHtml}</tbody>
     </table>
-    ${note.trim() ? `<div class="note"><strong>${t("quoteNoteLabel")}:</strong><br>${esc(note)}</div>` : ""}
-    <div class="disclaimer"><strong>${t("disclaimerLabel")}:</strong> ${esc(t("disclaimerText"))}</div>
+    ${note.trim() ? `<div class="note-block"><strong>${t("quoteNoteLabel")}:</strong><br>${esc(note)}</div>` : ""}
+    <div class="disclaimer-block"><strong>${t("disclaimerLabel")}:</strong> ${esc(t("disclaimerText"))}</div>
+    <table class="signature-block"><tr>
+      <td style="width:50%"></td>
+      <td style="width:50%">
+        <div class="signature-role">${t("signatureLabel")}</div>
+        <div class="signature-space"></div>
+        <div>${preparedBy}</div>
+      </td>
+    </tr></table>
     <script>window.onload = () => window.print();<\/script>
     </body></html>
   `);
@@ -891,34 +992,45 @@ function exportQuotePrint() {
 }
 
 function exportQuoteWord() {
-  const { rowsHtml, projRows, note, dateStr } = buildReportDocumentHtml();
+  const { rowsHtml, infoRows, note, dateBlock, companyName, preparedBy } = buildReportDocumentHtml();
   const esc = (s) => String(s || "").replace(/</g, "&lt;");
   // Word recognizes HTML saved with a .doc extension and the mso namespaces below;
   // this is a plain client-side download (no server, no external library needed).
+  // Real .docx (OOXML) generation would need an external JS library loaded over the
+  // network, which would break this app's fully-offline PWA design -- flagged to user.
   const docHtml = `
     <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">
     <head><meta charset="UTF-8">
     <title>${t("quoteReport")}</title>
+    <!--[if gte mso 9]>
+    <xml><w:WordDocument><w:View>Print</w:View></w:WordDocument></xml>
+    <![endif]-->
     <style>
-      body { font-family: Calibri, Arial, sans-serif; font-size: 12pt; color: #111; }
-      h1 { font-size: 16pt; margin-bottom: 4px; }
-      table { border-collapse: collapse; width: 100%; margin-top: 12pt; }
-      th, td { border: 1px solid #999; padding: 6px; font-size: 10.5pt; text-align: left; vertical-align: top; }
-      th { background: #eee; }
-      .proj-table td { border: none; padding: 2px 8px 2px 0; }
-      .note { margin-top: 14pt; font-size: 10.5pt; }
-      .disclaimer { margin-top: 16pt; font-size: 9pt; color: #666; }
+      @page WordSection1 { size: 21cm 29.7cm; margin: 2.0cm 2.0cm 2.0cm 3.0cm; mso-page-orientation: portrait; }
+      div.WordSection1 { page: WordSection1; }
+      ${documentStyleBlock()}
     </style>
     </head><body>
-    <h1>${t("quoteReport")}</h1>
-    <div>${t("reportDate")}: ${dateStr}</div>
-    ${projRows ? `<table class="proj-table" style="border:none; margin-top:8pt;"><tbody>${projRows}</tbody></table>` : ""}
-    <table>
+    <div class="WordSection1">
+    ${companyName ? `<div class="letterhead-company">${companyName}</div>` : ""}
+    <h1 class="doc-title">${t("docTitle")}</h1>
+    <div class="doc-date">${dateBlock}</div>
+    ${infoRows ? `<table class="info-table"><tbody>${infoRows}</tbody></table>` : ""}
+    <table class="equip-table">
       <thead><tr><th>#</th><th>${t("colBrand")}</th><th>${t("colModel")}</th><th>${t("fullSpecNote")}</th><th>${t("colQty")}</th><th>${t("colAccessories")}</th></tr></thead>
       <tbody>${rowsHtml}</tbody>
     </table>
-    ${note.trim() ? `<div class="note"><strong>${t("quoteNoteLabel")}:</strong><br>${esc(note)}</div>` : ""}
-    <div class="disclaimer"><strong>${t("disclaimerLabel")}:</strong> ${esc(t("disclaimerText"))}</div>
+    ${note.trim() ? `<div class="note-block"><strong>${t("quoteNoteLabel")}:</strong><br>${esc(note)}</div>` : ""}
+    <div class="disclaimer-block"><strong>${t("disclaimerLabel")}:</strong> ${esc(t("disclaimerText"))}</div>
+    <table class="signature-block"><tr>
+      <td style="width:50%"></td>
+      <td style="width:50%">
+        <div class="signature-role">${t("signatureLabel")}</div>
+        <div class="signature-space"></div>
+        <div>${preparedBy}</div>
+      </td>
+    </tr></table>
+    </div>
     </body></html>
   `;
   const blob = new Blob(["\ufeff", docHtml], { type: "application/msword" });
