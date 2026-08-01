@@ -1,4 +1,4 @@
-const CACHE_NAME = "equip-lookup-v11";
+const CACHE_NAME = "equip-lookup-v13";
 const CORE_ASSETS = [
   "./index.html",
   "./style.css",

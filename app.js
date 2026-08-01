@@ -1,4 +1,4 @@
-const BUILD_VERSION = "2026-07-31.1";
+const BUILD_VERSION = "2026-07-31.3";
 
 // ---------------------------------------------------------------------
 // i18n
@@ -62,7 +62,23 @@ const STR = {
   exportCsv:     { vi: "Xu\u1ea5t file CSV (Excel)", en: "Export CSV (Excel)" },
   exportPrint:   { vi: "In / L\u01b0u PDF", en: "Print / Save PDF" },
   clearAll:      { vi: "X\u00f3a t\u1ea5t c\u1ea3", en: "Clear all" },
-  quoteNoteLabel:{ vi: "Ghi ch\u00fa th\u00eam (t\u00f9y ch\u1ecdn)", en: "Additional note (optional)" }
+  quoteNoteLabel:{ vi: "Ghi ch\u00fa th\u00eam (t\u00f9y ch\u1ecdn)", en: "Additional note (optional)" },
+  projectInfo:   { vi: "Th\u00f4ng tin d\u1ef1 \u00e1n", en: "Project information" },
+  projectName:   { vi: "T\u00ean d\u1ef1 \u00e1n / c\u00f4ng tr\u00ecnh", en: "Project / site name" },
+  preparedBy:    { vi: "Ng\u01b0\u1eddi l\u1eadp / li\u00ean h\u1ec7", en: "Prepared by / contact" },
+  installLocation:{ vi: "\u0110\u1ecba \u0111i\u1ec3m l\u1eafp \u0111\u1eb7t", en: "Installation location" },
+  quoteDeadline: { vi: "H\u1ea1n ch\u1ed3t nh\u1eadn b\u00e1o gi\u00e1", en: "Quote deadline" },
+  reportDate:    { vi: "Ng\u00e0y l\u1eadp b\u00e1o c\u00e1o", en: "Report date" },
+  colAccessories:{ vi: "Y\u00eau c\u1ea7u t\u00f9y ch\u1ecdn / ph\u1ee5 ki\u1ec7n", en: "Optional requirements / accessories" },
+  accessoriesPlaceholder:{ vi: "VD: v\u1eadt li\u1ec7u SUS304, bi\u1ebfn t\u1ea7n, c\u00e1ch \u00e2m...", en: "e.g. SUS304 material, VFD, sound attenuation..." },
+  commercialTerms:{ vi: "\u0110i\u1ec1u ki\u1ec7n th\u01b0\u01a1ng m\u1ea1i", en: "Commercial terms" },
+  deliveryTerm:  { vi: "\u0110i\u1ec1u ki\u1ec7n giao h\u00e0ng (VD: FOB / CIF / DAP...)", en: "Delivery terms (e.g. FOB / CIF / DAP...)" },
+  installationIncluded:{ vi: "K\u00e8m l\u1eafp \u0111\u1eb7t?", en: "Installation included?" },
+  warrantyReq:   { vi: "Y\u00eau c\u1ea7u b\u1ea3o h\u00e0nh", en: "Warranty requirement" },
+  fullSpecNote:  { vi: "\u0110\u1ea7y \u0111\u1ee7 th\u00f4ng s\u1ed1", en: "Full specification" },
+  exportWord:    { vi: "Xu\u1ea5t file Word (.doc)", en: "Export Word (.doc)" },
+  disclaimerLabel:{ vi: "L\u01b0u \u00fd", en: "Note" },
+  disclaimerText:{ vi: "S\u1ed1 li\u1ec7u \u0111\u01b0\u1ee3c tr\u00edch t\u1eeb catalogue nh\u00e0 s\u1ea3n xu\u1ea5t. \u0110\u1ec1 ngh\u1ecb nh\u00e0 cung c\u1ea5p x\u00e1c nh\u1eadn l\u1ea1i th\u00f4ng s\u1ed1 v\u00e0 b\u00e1o gi\u00e1 theo \u0111i\u1ec1u ki\u1ec7n th\u1ef1c t\u1ebf c\u1ee7a d\u1ef1 \u00e1n tr\u01b0\u1edbc khi ch\u1ed1t.", en: "Data transcribed from the manufacturer's catalogue. Please have the supplier confirm the specifications and pricing against actual project conditions before finalizing." }
 };
 
 function t(key) { return (STR[key] && STR[key][LANG]) || key; }
@@ -179,7 +195,7 @@ function addToQuoteList(sourceId, model, qty) {
   if (existing) {
     existing.qty = (parseInt(existing.qty, 10) || 0) + (parseInt(qty, 10) || 1);
   } else {
-    list.push({ sourceId, model, qty: parseInt(qty, 10) || 1 });
+    list.push({ sourceId, model, qty: parseInt(qty, 10) || 1, accessories: "" });
   }
   saveQuoteList(list);
   refreshQuoteBadge();
@@ -195,6 +211,11 @@ function updateQuoteQty(index, qty) {
   if (list[index]) list[index].qty = Math.max(1, parseInt(qty, 10) || 1);
   saveQuoteList(list);
 }
+function updateQuoteAccessories(index, text) {
+  const list = loadQuoteList();
+  if (list[index]) list[index].accessories = text;
+  saveQuoteList(list);
+}
 function clearQuoteList() {
   saveQuoteList([]);
   refreshQuoteBadge();
@@ -203,14 +224,51 @@ function refreshQuoteBadge() {
   const el = document.getElementById("quoteCount");
   if (el) el.textContent = String(loadQuoteList().length);
 }
-// key-spec summary line per model, reusing whatever fields that model kind has
-function quoteKeySpec(src, m) {
+
+// Project info + commercial terms header (persisted separately from the equipment list itself)
+const PROJECT_INFO_KEY = "quoteProjectInfo";
+const PROJECT_INFO_DEFAULTS = {
+  projectName: "", preparedBy: "", installLocation: "", quoteDeadline: "",
+  deliveryTerm: "", installationIncluded: "", warrantyReq: ""
+};
+function loadProjectInfo() {
+  try {
+    const raw = localStorage.getItem(PROJECT_INFO_KEY);
+    return raw ? Object.assign({}, PROJECT_INFO_DEFAULTS, JSON.parse(raw)) : Object.assign({}, PROJECT_INFO_DEFAULTS);
+  } catch (e) { return Object.assign({}, PROJECT_INFO_DEFAULTS); }
+}
+function saveProjectInfo(info) {
+  try { localStorage.setItem(PROJECT_INFO_KEY, JSON.stringify(info)); } catch (e) {}
+}
+function updateProjectInfoField(field, value) {
+  const info = loadProjectInfo();
+  info[field] = value;
+  saveProjectInfo(info);
+}
+// full, non-abbreviated spec lines per model, reusing whatever fields that model kind has
+// (mirrors what renderSpec shows on the model's own detail page)
+function quoteFullSpecLines(src, m) {
+  const lines = [];
   if (src.kind === "condenser") {
-    return `${m.heatRejection} kW${m.ammonia != null ? ", NH3 " + m.ammonia + "kg" : ""}, ${m.A}\u00d7${m.B}\u00d7${m.H}mm`;
+    lines.push(`${t("heatRejection")}: ${m.heatRejection} kW`);
+    lines.push(`${t("fan")}: ${t("qty")} ${m.fanQty} \u00d7 ${t("airFlow")} ${m.fanAirFlow} m\u00b3/h, ${t("power")} ${m.fanPower} kW`);
+    if (m.pumpFlow != null) lines.push(`${t("pump")}: ${t("qty")} ${m.pumpQty || 1} \u00d7 ${t("flow")} ${m.pumpFlow} m\u00b3/h, ${t("power")} ${m.pumpPower} kW`);
+    if (m.ammonia != null) lines.push(`${t("ammonia")}: ${m.ammonia} kg`);
+    if (m.pipeDN) lines.push(`DN: ${m.pipeDN}`);
+    lines.push(`${t("dims")}: ${m.A}\u00d7${m.B}\u00d7${m.H} mm`);
+    lines.push(`${t("shipWeight")}: ${m.shipWeight} kg`);
+    lines.push(`${t("operWeight")}: ${m.operWeight} kg`);
   } else if (src.kind === "coolingtower") {
-    return `${m.flow != null ? m.flow + " m\u00b3/h" : ""}, ${m.A}\u00d7${m.B}\u00d7${m.H}mm`;
+    lines.push(`${t("nominalFlow")}: ${m.flow != null ? m.flow + " m\u00b3/h" : "\u2014"}`);
+    lines.push(`${t("fan")}: ${t("qty")} ${m.fanQty} \u00d7 ${t("airFlow")} ${m.fanAirFlow} m\u00b3/h, ${t("power")} ${m.fanPower} kW`);
+    if (m.pumpFlow != null) lines.push(`${t("pump")}: ${t("qty")} ${m.pumpQty || 1} \u00d7 ${t("flow")} ${m.pumpFlow} m\u00b3/h, ${t("power")} ${m.pumpPower} kW`);
+    if (m.pipeDN) lines.push(`DN: ${m.pipeDN}`);
+    lines.push(`${t("dims")}: ${m.A}\u00d7${m.B}\u00d7${m.H} mm`);
+    lines.push(`${t("shipWeight")}: ${m.shipWeight} kg`);
+    lines.push(`${t("operWeight")}: ${m.operWeight} kg`);
+    lines.push(`${t("designCondition")}: ${src.designCondition[LANG]}`);
   }
-  return "";
+  return lines;
 }
 
 // ---------------------------------------------------------------------
@@ -593,13 +651,39 @@ function renderSpec(sourceId, modelName) {
 // ---------------------------------------------------------------------
 function renderReport() {
   const list = loadQuoteList();
+  const proj = loadProjectInfo();
+  const esc = (s) => String(s || "").replace(/"/g, "&quot;");
   let html = `<button class="back-btn">${t("back")}</button>
     <h2>${t("quoteReport")}</h2>`;
+
+  html += `
+    <div class="panel">
+      <h3>${t("projectInfo")}</h3>
+      <label>${t("projectName")}</label>
+      <input type="text" id="projName" value="${esc(proj.projectName)}">
+      <label>${t("preparedBy")}</label>
+      <input type="text" id="projPreparedBy" value="${esc(proj.preparedBy)}">
+      <label>${t("installLocation")}</label>
+      <input type="text" id="projLocation" value="${esc(proj.installLocation)}">
+      <label>${t("quoteDeadline")}</label>
+      <input type="date" id="projDeadline" value="${proj.quoteDeadline || ""}">
+    </div>
+    <div class="panel">
+      <h3>${t("commercialTerms")}</h3>
+      <label>${t("deliveryTerm")}</label>
+      <input type="text" id="projDeliveryTerm" value="${esc(proj.deliveryTerm)}">
+      <label>${t("installationIncluded")}</label>
+      <input type="text" id="projInstallIncluded" value="${esc(proj.installationIncluded)}">
+      <label>${t("warrantyReq")}</label>
+      <input type="text" id="projWarranty" value="${esc(proj.warrantyReq)}">
+    </div>
+  `;
 
   if (list.length === 0) {
     html += `<div class="panel empty-note">${t("quoteEmpty")}</div>`;
     appEl.innerHTML = html;
     appEl.querySelector(".back-btn").addEventListener("click", () => render({ name: "home" }));
+    wireProjectInfoInputs();
     return;
   }
 
@@ -607,14 +691,16 @@ function renderReport() {
     const src = DATABASE.sources.find(s => s.id === it.sourceId);
     const m = src ? src.models.find(mm => mm.model === it.model) : null;
     const brandName = src ? (BRANDS[brandKeyOf(src)] || {}).name || brandKeyOf(src) : it.sourceId;
-    const specStr = (src && m) ? quoteKeySpec(src, m) : "\u2014";
+    const specLines = (src && m) ? quoteFullSpecLines(src, m) : ["\u2014"];
+    const specHtml = specLines.map(l => `<div>${l}</div>`).join("");
     return `
       <tr>
         <td>${idx + 1}</td>
         <td>${brandName}</td>
         <td>${it.model}</td>
-        <td>${specStr}</td>
+        <td>${specHtml}</td>
         <td><input type="number" min="1" step="1" class="qty-input" data-idx="${idx}" value="${it.qty}"></td>
+        <td><textarea rows="2" class="acc-input" data-idx="${idx}" placeholder="${t("accessoriesPlaceholder")}">${esc(it.accessories)}</textarea></td>
         <td><button class="remove-btn" data-idx="${idx}">${t("removeItem")}</button></td>
       </tr>`;
   }).join("");
@@ -623,7 +709,7 @@ function renderReport() {
     <div class="panel">
       <div class="quote-table-wrap">
         <table>
-          <thead><tr><th>#</th><th>${t("colBrand")}</th><th>${t("colModel")}</th><th>${t("colSpec")}</th><th>${t("colQty")}</th><th></th></tr></thead>
+          <thead><tr><th>#</th><th>${t("colBrand")}</th><th>${t("colModel")}</th><th>${t("fullSpecNote")}</th><th>${t("colQty")}</th><th>${t("colAccessories")}</th><th></th></tr></thead>
           <tbody>${rows}</tbody>
         </table>
       </div>
@@ -635,16 +721,23 @@ function renderReport() {
     <div class="panel" style="display:flex; gap:10px; flex-wrap:wrap;">
       <button class="primary-btn" id="exportCsvBtn">${t("exportCsv")}</button>
       <button class="primary-btn" id="exportPrintBtn">${t("exportPrint")}</button>
+      <button class="primary-btn" id="exportWordBtn">${t("exportWord")}</button>
       <button class="remove-btn" id="clearAllBtn">${t("clearAll")}</button>
     </div>
   `;
 
   appEl.innerHTML = html;
   appEl.querySelector(".back-btn").addEventListener("click", () => render({ name: "home" }));
+  wireProjectInfoInputs();
 
   appEl.querySelectorAll(".qty-input").forEach(inp => {
     inp.addEventListener("change", () => {
       updateQuoteQty(parseInt(inp.dataset.idx, 10), inp.value);
+    });
+  });
+  appEl.querySelectorAll(".acc-input").forEach(inp => {
+    inp.addEventListener("change", () => {
+      updateQuoteAccessories(parseInt(inp.dataset.idx, 10), inp.value);
     });
   });
   appEl.querySelectorAll(".remove-btn[data-idx]").forEach(btn => {
@@ -659,6 +752,23 @@ function renderReport() {
   });
   document.getElementById("exportCsvBtn").addEventListener("click", () => exportQuoteCsv());
   document.getElementById("exportPrintBtn").addEventListener("click", () => exportQuotePrint());
+  document.getElementById("exportWordBtn").addEventListener("click", () => exportQuoteWord());
+}
+
+function wireProjectInfoInputs() {
+  const map = {
+    projName: "projectName",
+    projPreparedBy: "preparedBy",
+    projLocation: "installLocation",
+    projDeadline: "quoteDeadline",
+    projDeliveryTerm: "deliveryTerm",
+    projInstallIncluded: "installationIncluded",
+    projWarranty: "warrantyReq"
+  };
+  Object.keys(map).forEach(elId => {
+    const el = document.getElementById(elId);
+    if (el) el.addEventListener("change", () => updateProjectInfoField(map[elId], el.value));
+  });
 }
 
 function buildQuoteRows() {
@@ -667,8 +777,8 @@ function buildQuoteRows() {
     const src = DATABASE.sources.find(s => s.id === it.sourceId);
     const m = src ? src.models.find(mm => mm.model === it.model) : null;
     const brandName = src ? (BRANDS[brandKeyOf(src)] || {}).name || brandKeyOf(src) : it.sourceId;
-    const specStr = (src && m) ? quoteKeySpec(src, m) : "";
-    return { stt: idx + 1, brandName, model: it.model, specStr, qty: it.qty };
+    const specLines = (src && m) ? quoteFullSpecLines(src, m) : [];
+    return { stt: idx + 1, brandName, model: it.model, specLines, qty: it.qty, accessories: it.accessories || "" };
   });
 }
 
@@ -678,23 +788,43 @@ function csvEscape(val) {
   return s;
 }
 
+function projectAndTermsLines(proj) {
+  const lines = [];
+  if (proj.projectName) lines.push(t("projectName") + ": " + proj.projectName);
+  if (proj.preparedBy) lines.push(t("preparedBy") + ": " + proj.preparedBy);
+  if (proj.installLocation) lines.push(t("installLocation") + ": " + proj.installLocation);
+  if (proj.quoteDeadline) lines.push(t("quoteDeadline") + ": " + proj.quoteDeadline);
+  if (proj.deliveryTerm) lines.push(t("deliveryTerm") + ": " + proj.deliveryTerm);
+  if (proj.installationIncluded) lines.push(t("installationIncluded") + ": " + proj.installationIncluded);
+  if (proj.warrantyReq) lines.push(t("warrantyReq") + ": " + proj.warrantyReq);
+  return lines;
+}
+
 function exportQuoteCsv() {
   const rows = buildQuoteRows();
   const note = (document.getElementById("quoteNote") || {}).value || "";
-  const header = ["STT", t("colBrand"), t("colModel"), t("colSpec"), t("colQty")];
-  const lines = [header.map(csvEscape).join(",")];
+  const proj = loadProjectInfo();
+  const dateStr = new Date().toISOString().slice(0, 10);
+  const lines = [];
+  lines.push(csvEscape(t("quoteReport")));
+  lines.push(csvEscape(t("reportDate") + ": " + dateStr));
+  projectAndTermsLines(proj).forEach(l => lines.push(csvEscape(l)));
+  lines.push("");
+  const header = ["STT", t("colBrand"), t("colModel"), t("fullSpecNote"), t("colQty"), t("colAccessories")];
+  lines.push(header.map(csvEscape).join(","));
   rows.forEach(r => {
-    lines.push([r.stt, r.brandName, r.model, r.specStr, r.qty].map(csvEscape).join(","));
+    lines.push([r.stt, r.brandName, r.model, r.specLines.join("\n"), r.qty, r.accessories].map(csvEscape).join(","));
   });
   if (note.trim()) {
     lines.push("");
     lines.push(csvEscape(t("quoteNoteLabel") + ": " + note));
   }
+  lines.push("");
+  lines.push(csvEscape(t("disclaimerLabel") + ": " + t("disclaimerText")));
   const csvContent = "\uFEFF" + lines.join("\r\n");
   const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
-  const dateStr = new Date().toISOString().slice(0, 10);
   a.href = url;
   a.download = `bao-cao-thiet-bi-${dateStr}.csv`;
   document.body.appendChild(a);
@@ -703,14 +833,32 @@ function exportQuoteCsv() {
   URL.revokeObjectURL(url);
 }
 
-function exportQuotePrint() {
+function buildReportDocumentHtml() {
   const rows = buildQuoteRows();
   const note = (document.getElementById("quoteNote") || {}).value || "";
+  const proj = loadProjectInfo();
   const dateStr = new Date().toLocaleDateString(LANG === "vi" ? "vi-VN" : "en-US");
+  const esc = (s) => String(s || "").replace(/</g, "&lt;");
   const rowsHtml = rows.map(r => `
     <tr>
-      <td>${r.stt}</td><td>${r.brandName}</td><td>${r.model}</td><td>${r.specStr}</td><td style="text-align:center">${r.qty}</td>
+      <td>${r.stt}</td><td>${r.brandName}</td><td>${r.model}</td>
+      <td>${r.specLines.map(l => esc(l)).join("<br>")}</td>
+      <td style="text-align:center">${r.qty}</td>
+      <td>${esc(r.accessories).replace(/\n/g, "<br>")}</td>
     </tr>`).join("");
+  const termLines = projectAndTermsLines(proj);
+  const projRows = termLines.map(l => {
+    const idx = l.indexOf(":");
+    const label = idx >= 0 ? l.slice(0, idx) : l;
+    const val = idx >= 0 ? l.slice(idx + 1).trim() : "";
+    return `<tr><td><strong>${esc(label)}</strong></td><td>${esc(val)}</td></tr>`;
+  }).join("");
+  return { rowsHtml, projRows, note, dateStr };
+}
+
+function exportQuotePrint() {
+  const { rowsHtml, projRows, note, dateStr } = buildReportDocumentHtml();
+  const esc = (s) => String(s || "").replace(/</g, "&lt;");
   const win = window.open("", "_blank");
   if (!win) return;
   win.document.write(`
@@ -718,24 +866,71 @@ function exportQuotePrint() {
     <meta charset="UTF-8">
     <style>
       body { font-family: Arial, sans-serif; padding: 24px; color: #111; }
-      h1 { font-size: 20px; }
+      h1 { font-size: 20px; margin-bottom: 4px; }
       table { width: 100%; border-collapse: collapse; margin-top: 16px; }
-      th, td { border: 1px solid #999; padding: 8px; font-size: 13px; text-align: left; }
+      th, td { border: 1px solid #999; padding: 8px; font-size: 13px; text-align: left; vertical-align: top; }
       th { background: #eee; }
+      .proj-table td { border: none; padding: 3px 8px 3px 0; font-size: 13px; }
       .note { margin-top: 16px; white-space: pre-wrap; font-size: 13px; }
+      .disclaimer { margin-top: 20px; font-size: 11px; color: #666; border-top: 1px solid #ccc; padding-top: 8px; }
     </style>
     </head><body>
     <h1>${t("quoteReport")}</h1>
-    <div>${dateStr}</div>
+    <div>${t("reportDate")}: ${dateStr}</div>
+    ${projRows ? `<table class="proj-table" style="margin-top:12px; border:none;"><tbody>${projRows}</tbody></table>` : ""}
     <table>
-      <thead><tr><th>#</th><th>${t("colBrand")}</th><th>${t("colModel")}</th><th>${t("colSpec")}</th><th>${t("colQty")}</th></tr></thead>
+      <thead><tr><th>#</th><th>${t("colBrand")}</th><th>${t("colModel")}</th><th>${t("fullSpecNote")}</th><th>${t("colQty")}</th><th>${t("colAccessories")}</th></tr></thead>
       <tbody>${rowsHtml}</tbody>
     </table>
-    ${note.trim() ? `<div class="note"><strong>${t("quoteNoteLabel")}:</strong><br>${note.replace(/</g, "&lt;")}</div>` : ""}
+    ${note.trim() ? `<div class="note"><strong>${t("quoteNoteLabel")}:</strong><br>${esc(note)}</div>` : ""}
+    <div class="disclaimer"><strong>${t("disclaimerLabel")}:</strong> ${esc(t("disclaimerText"))}</div>
     <script>window.onload = () => window.print();<\/script>
     </body></html>
   `);
   win.document.close();
+}
+
+function exportQuoteWord() {
+  const { rowsHtml, projRows, note, dateStr } = buildReportDocumentHtml();
+  const esc = (s) => String(s || "").replace(/</g, "&lt;");
+  // Word recognizes HTML saved with a .doc extension and the mso namespaces below;
+  // this is a plain client-side download (no server, no external library needed).
+  const docHtml = `
+    <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">
+    <head><meta charset="UTF-8">
+    <title>${t("quoteReport")}</title>
+    <style>
+      body { font-family: Calibri, Arial, sans-serif; font-size: 12pt; color: #111; }
+      h1 { font-size: 16pt; margin-bottom: 4px; }
+      table { border-collapse: collapse; width: 100%; margin-top: 12pt; }
+      th, td { border: 1px solid #999; padding: 6px; font-size: 10.5pt; text-align: left; vertical-align: top; }
+      th { background: #eee; }
+      .proj-table td { border: none; padding: 2px 8px 2px 0; }
+      .note { margin-top: 14pt; font-size: 10.5pt; }
+      .disclaimer { margin-top: 16pt; font-size: 9pt; color: #666; }
+    </style>
+    </head><body>
+    <h1>${t("quoteReport")}</h1>
+    <div>${t("reportDate")}: ${dateStr}</div>
+    ${projRows ? `<table class="proj-table" style="border:none; margin-top:8pt;"><tbody>${projRows}</tbody></table>` : ""}
+    <table>
+      <thead><tr><th>#</th><th>${t("colBrand")}</th><th>${t("colModel")}</th><th>${t("fullSpecNote")}</th><th>${t("colQty")}</th><th>${t("colAccessories")}</th></tr></thead>
+      <tbody>${rowsHtml}</tbody>
+    </table>
+    ${note.trim() ? `<div class="note"><strong>${t("quoteNoteLabel")}:</strong><br>${esc(note)}</div>` : ""}
+    <div class="disclaimer"><strong>${t("disclaimerLabel")}:</strong> ${esc(t("disclaimerText"))}</div>
+    </body></html>
+  `;
+  const blob = new Blob(["\ufeff", docHtml], { type: "application/msword" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  const fileDateStr = new Date().toISOString().slice(0, 10);
+  a.href = url;
+  a.download = `bao-cao-thiet-bi-${fileDateStr}.doc`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
 }
 
 // ---------------------------------------------------------------------
