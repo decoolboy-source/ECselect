@@ -1,4 +1,4 @@
-const BUILD_VERSION = "2026-08-01.1";
+const BUILD_VERSION = "2026-08-01.2";
 
 // ---------------------------------------------------------------------
 // i18n
@@ -6,7 +6,7 @@ const BUILD_VERSION = "2026-08-01.1";
 let LANG = localStorage.getItem("lang") || "vi";
 
 const STR = {
-  appTitle:      { vi: "Tra c\u1ee9u d\u00e0n ng\u01b0ng", en: "Condenser Lookup" },
+  appTitle:      { vi: "Tra c\u1ee9u thi\u1ebft b\u1ecb gi\u1ea3i nhi\u1ec7t", en: "Cooling Equipment Lookup" },
   home:          { vi: "Trang ch\u1ee7", en: "Home" },
   back:          { vi: "\u2190 Quay l\u1ea1i", en: "\u2190 Back" },
   chooseSource:  { vi: "Ch\u1ecdn h\u00e3ng / d\u00f2ng s\u1ea3n ph\u1ea9m", en: "Choose a manufacturer / product line" },
@@ -89,7 +89,9 @@ const STR = {
   reqFlow:       { vi: "L\u01b0u l\u01b0\u1ee3ng y\u00eau c\u1ea7u (m\u00b3/h)", en: "Required flow (m\u00b3/h)" },
   reqOptionalNote:{ vi: "(t\u00f9y ch\u1ecdn \u2014 ghi l\u1ea1i \u0111i\u1ec1u ki\u1ec7n thi\u1ebft k\u1ebf d\u00f9ng \u0111\u1ec3 ch\u1ecdn model n\u00e0y)", en: "(optional \u2014 record the design condition used to select this model)" },
   docTitle:      { vi: "PHIẾU YÊU CẦU BÁO GIÁ THIẾT BỊ", en: "EQUIPMENT QUOTE REQUEST" },
-  signatureLabel:{ vi: "Ng\u01b0\u1eddi l\u1eadp b\u00e1o c\u00e1o", en: "Prepared by" }
+  signatureLabel:{ vi: "Ng\u01b0\u1eddi l\u1eadp b\u00e1o c\u00e1o", en: "Prepared by" },
+  printAgain:    { vi: "\ud83d\udda8\ufe0f In l\u1ea1i", en: "\ud83d\udda8\ufe0f Print again" },
+  closeWindow:   { vi: "\u2715 \u0110\u00f3ng", en: "\u2715 Close" }
 };
 
 function t(key) { return (STR[key] && STR[key][LANG]) || key; }
@@ -906,25 +908,29 @@ function vnDateBlock(d) {
 // margins following the common Vietnamese administrative-document convention (Thong tu
 // 01/2011/TT-BNV) -- there isn't a single numbered TCVN standard for RFQ-style document
 // layout specifically, so this follows that widely-used convention rather than a
-// numbered TCVN.
+// numbered TCVN. Sizes/margins tuned down from an earlier pass that ran too large and
+// looked unbalanced on the page.
 function documentStyleBlock(pageMarginCss) {
   return `
     ${pageMarginCss || ""}
-    body { font-family: 'Times New Roman', Times, serif; font-size: 13pt; color: #000; line-height: 1.4; }
-    .letterhead-company { font-size: 13pt; font-weight: bold; text-transform: uppercase; }
-    h1.doc-title { font-size: 15pt; font-weight: bold; text-align: center; text-transform: uppercase; margin: 18pt 0 6pt; letter-spacing: 0.5px; }
-    .doc-date { text-align: right; font-size: 12pt; font-style: italic; margin-bottom: 10pt; }
-    table.info-table { border-collapse: collapse; margin-bottom: 6pt; }
-    table.info-table td { border: none; padding: 2pt 12pt 2pt 0; font-size: 13pt; vertical-align: top; }
-    table.equip-table { border-collapse: collapse; width: 100%; margin-top: 10pt; }
-    table.equip-table th, table.equip-table td { border: 1px solid #000; padding: 6pt; font-size: 12pt; text-align: left; vertical-align: top; }
+    body { font-family: 'Times New Roman', Times, serif; font-size: 11.5pt; color: #000; line-height: 1.4; }
+    .doc-header-row { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 4pt; }
+    .letterhead-company { font-size: 12pt; font-weight: bold; text-transform: uppercase; }
+    .doc-date { font-size: 11pt; font-style: italic; white-space: nowrap; }
+    h1.doc-title { font-size: 14pt; font-weight: bold; text-align: center; text-transform: uppercase; margin: 10pt 0 2pt; letter-spacing: 0.5px; }
+    .doc-title-rule { border: none; border-top: 1.5px solid #000; width: 45%; margin: 0 auto 12pt; }
+    .info-columns { display: flex; justify-content: space-between; gap: 24pt; margin-bottom: 8pt; }
+    .info-columns table { border-collapse: collapse; }
+    .info-columns td { border: none; padding: 1.5pt 8pt 1.5pt 0; font-size: 11.5pt; vertical-align: top; }
+    table.equip-table { border-collapse: collapse; width: 100%; margin-top: 8pt; table-layout: fixed; }
+    table.equip-table th, table.equip-table td { border: 1px solid #000; padding: 5pt; font-size: 10.5pt; text-align: left; vertical-align: top; word-wrap: break-word; }
     table.equip-table th { background: #e6e6e6; font-weight: bold; text-align: center; }
-    .note-block { margin-top: 14pt; font-size: 12.5pt; }
-    .disclaimer-block { margin-top: 16pt; font-size: 10.5pt; font-style: italic; color: #333; border-top: 1px solid #999; padding-top: 6pt; }
-    table.signature-block { width: 100%; margin-top: 34pt; border-collapse: collapse; }
-    table.signature-block td { border: none; text-align: center; font-size: 13pt; vertical-align: top; }
+    .note-block { margin-top: 12pt; font-size: 11pt; }
+    .disclaimer-block { margin-top: 14pt; font-size: 9.5pt; font-style: italic; color: #333; border-top: 1px solid #999; padding-top: 6pt; }
+    table.signature-block { width: 100%; margin-top: 26pt; border-collapse: collapse; }
+    table.signature-block td { border: none; text-align: center; font-size: 11.5pt; vertical-align: top; }
     .signature-role { font-weight: bold; text-transform: uppercase; }
-    .signature-space { height: 56pt; }
+    .signature-space { height: 48pt; }
   `;
 }
 
@@ -933,7 +939,6 @@ function buildReportDocumentHtml() {
   const note = (document.getElementById("quoteNote") || {}).value || "";
   const proj = loadProjectInfo();
   const now = new Date();
-  const dateStr = now.toLocaleDateString(LANG === "vi" ? "vi-VN" : "en-US");
   const dateBlock = vnDateBlock(now);
   const esc = (s) => String(s || "").replace(/</g, "&lt;");
   const rowsHtml = rows.map(r => `
@@ -943,35 +948,56 @@ function buildReportDocumentHtml() {
       <td style="text-align:center">${r.qty}</td>
       <td>${esc(r.accessories).replace(/\n/g, "<br>")}</td>
     </tr>`).join("");
-  const termLines = projectAndTermsLines(proj);
-  const infoRows = termLines.map(l => {
-    const idx = l.indexOf(":");
-    const label = idx >= 0 ? l.slice(0, idx) : l;
-    const val = idx >= 0 ? l.slice(idx + 1).trim() : "";
-    return `<tr><td><strong>${esc(label)}</strong></td><td>${esc(val)}</td></tr>`;
-  }).join("");
-  return { rowsHtml, infoRows, note, dateStr, dateBlock, companyName: esc(proj.companyName), preparedBy: esc(proj.preparedBy) };
+
+  // Two visually balanced columns instead of one long list: left = who/what/where,
+  // right = contact + commercial terms.
+  const leftPairs = [
+    [t("companyName"), proj.companyName],
+    [t("projectName"), proj.projectName],
+    [t("installLocation"), proj.installLocation],
+    [t("quoteDeadline"), proj.quoteDeadline]
+  ];
+  const rightPairs = [
+    [t("preparedBy"), proj.preparedBy],
+    [t("preparedByPhone"), proj.preparedByPhone],
+    [t("preparedByEmail"), proj.preparedByEmail],
+    [t("deliveryTerm"), proj.deliveryTerm],
+    [t("installationIncluded"), proj.installationIncluded],
+    [t("warrantyReq"), proj.warrantyReq]
+  ];
+  const pairRows = (pairs) => pairs.filter(p => p[1]).map(p =>
+    `<tr><td><strong>${esc(p[0])}</strong></td><td>${esc(p[1])}</td></tr>`).join("");
+  const leftRows = pairRows(leftPairs);
+  const rightRows = pairRows(rightPairs);
+
+  return {
+    rowsHtml, note, dateBlock,
+    companyName: esc(proj.companyName),
+    preparedBy: esc(proj.preparedBy),
+    leftRows, rightRows
+  };
 }
 
-function exportQuotePrint() {
-  const { rowsHtml, infoRows, note, dateBlock, companyName, preparedBy } = buildReportDocumentHtml();
+function documentBodyHtml(doc) {
+  const { rowsHtml, note, dateBlock, companyName, preparedBy, leftRows, rightRows } = doc;
   const esc = (s) => String(s || "").replace(/</g, "&lt;");
-  const win = window.open("", "_blank");
-  if (!win) return;
-  win.document.write(`
-    <html><head><title>${t("quoteReport")}</title>
-    <meta charset="UTF-8">
-    <style>
-      @page { size: A4; margin: 20mm 20mm 20mm 30mm; }
-      body { padding: 0; }
-      ${documentStyleBlock()}
-    </style>
-    </head><body>
-    ${companyName ? `<div class="letterhead-company">${companyName}</div>` : ""}
+  return `
+    <div class="doc-header-row">
+      <div class="letterhead-company">${companyName || "&nbsp;"}</div>
+      <div class="doc-date">${dateBlock}</div>
+    </div>
     <h1 class="doc-title">${t("docTitle")}</h1>
-    <div class="doc-date">${dateBlock}</div>
-    ${infoRows ? `<table class="info-table"><tbody>${infoRows}</tbody></table>` : ""}
+    <hr class="doc-title-rule">
+    ${(leftRows || rightRows) ? `
+    <div class="info-columns">
+      <table>${leftRows}</table>
+      <table>${rightRows}</table>
+    </div>` : ""}
     <table class="equip-table">
+      <colgroup>
+        <col style="width:4%"><col style="width:11%"><col style="width:12%">
+        <col style="width:39%"><col style="width:6%"><col style="width:28%">
+      </colgroup>
       <thead><tr><th>#</th><th>${t("colBrand")}</th><th>${t("colModel")}</th><th>${t("fullSpecNote")}</th><th>${t("colQty")}</th><th>${t("colAccessories")}</th></tr></thead>
       <tbody>${rowsHtml}</tbody>
     </table>
@@ -985,15 +1011,54 @@ function exportQuotePrint() {
         <div>${preparedBy}</div>
       </td>
     </tr></table>
-    <script>window.onload = () => window.print();<\/script>
+  `;
+}
+
+function exportQuotePrint() {
+  const doc = buildReportDocumentHtml();
+  const win = window.open("", "_blank");
+  if (!win) return;
+  win.document.write(`
+    <html><head><title>${t("quoteReport")}</title>
+    <meta charset="UTF-8">
+    <style>
+      @page { size: A4; margin: 18mm; }
+      body { padding: 0 0 24px; }
+      .doc-toolbar {
+        position: sticky; top: 0; z-index: 10;
+        display: flex; gap: 8px; justify-content: flex-end;
+        background: #f2f2f2; border-bottom: 1px solid #ccc;
+        padding: 10px 18mm; margin: 0 0 18mm;
+      }
+      .doc-toolbar button {
+        font-family: Arial, sans-serif; font-size: 13px; padding: 7px 14px;
+        border-radius: 4px; border: 1px solid #999; background: #fff; cursor: pointer;
+      }
+      .doc-toolbar button.primary { background: #222; color: #fff; border-color: #222; }
+      .doc-body { padding: 0 18mm; }
+      @media print { .doc-toolbar { display: none; } .doc-body { padding: 0; } }
+      ${documentStyleBlock()}
+    </style>
+    </head><body>
+    <div class="doc-toolbar">
+      <button class="primary" id="printAgainBtn">${t("printAgain")}</button>
+      <button id="closeWinBtn">${t("closeWindow")}</button>
+    </div>
+    <div class="doc-body">
+      ${documentBodyHtml(doc)}
+    </div>
+    <script>
+      document.getElementById("printAgainBtn").addEventListener("click", () => window.print());
+      document.getElementById("closeWinBtn").addEventListener("click", () => window.close());
+      window.onload = () => window.print();
+    <\/script>
     </body></html>
   `);
   win.document.close();
 }
 
 function exportQuoteWord() {
-  const { rowsHtml, infoRows, note, dateBlock, companyName, preparedBy } = buildReportDocumentHtml();
-  const esc = (s) => String(s || "").replace(/</g, "&lt;");
+  const doc = buildReportDocumentHtml();
   // Word recognizes HTML saved with a .doc extension and the mso namespaces below;
   // this is a plain client-side download (no server, no external library needed).
   // Real .docx (OOXML) generation would need an external JS library loaded over the
@@ -1006,30 +1071,13 @@ function exportQuoteWord() {
     <xml><w:WordDocument><w:View>Print</w:View></w:WordDocument></xml>
     <![endif]-->
     <style>
-      @page WordSection1 { size: 21cm 29.7cm; margin: 2.0cm 2.0cm 2.0cm 3.0cm; mso-page-orientation: portrait; }
+      @page WordSection1 { size: 21cm 29.7cm; margin: 1.8cm; mso-page-orientation: portrait; }
       div.WordSection1 { page: WordSection1; }
       ${documentStyleBlock()}
     </style>
     </head><body>
     <div class="WordSection1">
-    ${companyName ? `<div class="letterhead-company">${companyName}</div>` : ""}
-    <h1 class="doc-title">${t("docTitle")}</h1>
-    <div class="doc-date">${dateBlock}</div>
-    ${infoRows ? `<table class="info-table"><tbody>${infoRows}</tbody></table>` : ""}
-    <table class="equip-table">
-      <thead><tr><th>#</th><th>${t("colBrand")}</th><th>${t("colModel")}</th><th>${t("fullSpecNote")}</th><th>${t("colQty")}</th><th>${t("colAccessories")}</th></tr></thead>
-      <tbody>${rowsHtml}</tbody>
-    </table>
-    ${note.trim() ? `<div class="note-block"><strong>${t("quoteNoteLabel")}:</strong><br>${esc(note)}</div>` : ""}
-    <div class="disclaimer-block"><strong>${t("disclaimerLabel")}:</strong> ${esc(t("disclaimerText"))}</div>
-    <table class="signature-block"><tr>
-      <td style="width:50%"></td>
-      <td style="width:50%">
-        <div class="signature-role">${t("signatureLabel")}</div>
-        <div class="signature-space"></div>
-        <div>${preparedBy}</div>
-      </td>
-    </tr></table>
+    ${documentBodyHtml(doc)}
     </div>
     </body></html>
   `;
