@@ -1,9 +1,22 @@
-const BUILD_VERSION = "2026-08-01.2";
+const BUILD_VERSION = "2026-11-14.1";
+
+// localStorage dùng chung cả origin với namecard và các PWA khác:
+// mọi khóa của app này có tiền tố "ecselect:". Chuyển dữ liệu từ khóa cũ (không tiền tố) một lần.
+const LS_KEYS = { lang: "ecselect:lang", quoteList: "ecselect:quoteList", quoteProjectInfo: "ecselect:quoteProjectInfo" };
+try {
+  Object.keys(LS_KEYS).forEach(oldKey => {
+    const newKey = LS_KEYS[oldKey];
+    const oldVal = localStorage.getItem(oldKey);
+    if (localStorage.getItem(newKey) === null && oldVal !== null) localStorage.setItem(newKey, oldVal);
+    // "lang" có thể là của namecard nên không xóa; hai khóa báo giá chỉ app này dùng.
+    if (oldKey !== "lang" && oldVal !== null) localStorage.removeItem(oldKey);
+  });
+} catch (e) {}
 
 // ---------------------------------------------------------------------
 // i18n
 // ---------------------------------------------------------------------
-let LANG = localStorage.getItem("lang") || "vi";
+let LANG = localStorage.getItem(LS_KEYS.lang) || "vi";
 
 const STR = {
   appTitle:      { vi: "Tra c\u1ee9u thi\u1ebft b\u1ecb gi\u1ea3i nhi\u1ec7t", en: "Cooling Equipment Lookup" },
@@ -191,7 +204,7 @@ function interpolate2D(table, condTemp, wetBulb) {
 // ---------------------------------------------------------------------
 // Quote / report list (persisted in localStorage)
 // ---------------------------------------------------------------------
-const QUOTE_KEY = "quoteList";
+const QUOTE_KEY = LS_KEYS.quoteList;
 
 function loadQuoteList() {
   try {
@@ -240,7 +253,7 @@ function refreshQuoteBadge() {
 }
 
 // Project info + commercial terms header (persisted separately from the equipment list itself)
-const PROJECT_INFO_KEY = "quoteProjectInfo";
+const PROJECT_INFO_KEY = LS_KEYS.quoteProjectInfo;
 const PROJECT_INFO_DEFAULTS = {
   companyName: "", projectName: "", preparedBy: "", preparedByPhone: "", preparedByEmail: "",
   installLocation: "", quoteDeadline: "",
@@ -1105,7 +1118,7 @@ document.getElementById("quoteToggle").addEventListener("click", () => render({ 
 
 document.getElementById("langToggle").addEventListener("click", () => {
   LANG = LANG === "vi" ? "en" : "vi";
-  localStorage.setItem("lang", LANG);
+  localStorage.setItem(LS_KEYS.lang, LANG);
   refreshLangUI();
   render(currentView);
 });
