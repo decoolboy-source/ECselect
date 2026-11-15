@@ -1,17 +1,14 @@
 const BUILD_VERSION = "2026-11-14.1";
 
-// localStorage dùng chung cả origin với namecard và các PWA khác:
-// mọi khóa của app này có tiền tố "ecselect:". Chuyển dữ liệu từ khóa cũ (không tiền tố) một lần.
-const LS_KEYS = { lang: "ecselect:lang", quoteList: "ecselect:quoteList", quoteProjectInfo: "ecselect:quoteProjectInfo" };
-try {
-  Object.keys(LS_KEYS).forEach(oldKey => {
-    const newKey = LS_KEYS[oldKey];
-    const oldVal = localStorage.getItem(oldKey);
-    if (localStorage.getItem(newKey) === null && oldVal !== null) localStorage.setItem(newKey, oldVal);
-    // "lang" có thể là của namecard nên không xóa; hai khóa báo giá chỉ app này dùng.
-    if (oldKey !== "lang" && oldVal !== null) localStorage.removeItem(oldKey);
-  });
-} catch (e) {}
+const LS_KEYS = { lang: "ECselect:lang", quoteList: "ECselect:quoteList", quoteProjectInfo: "ECselect:quoteProjectInfo" };
+/* [ECselect] localStorage dùng chung origin với các PWA khác: mọi khóa của app này có tiền tố "ECselect:".
+   Lần đầu mở bản mới: chép dữ liệu từ khóa cũ sang khóa mới (nếu khóa mới chưa có). Giữ nguyên khóa cũ. */
+(function(){try{var P="ECselect:",E=[],F=[],i,k,K=[];var S={"lang": ["ecselect:lang", "lang"], "quoteList": ["ecselect:quoteList", "quoteList"], "quoteProjectInfo": ["ecselect:quoteProjectInfo", "quoteProjectInfo"]};
+for(i=0;i<localStorage.length;i++){k=localStorage.key(i);if(k&&k.indexOf(P)!==0)K.push(k);}
+K.forEach(function(k){var hit=E.indexOf(k)>=0||F.some(function(f){return k.indexOf(f)===0;});
+if(hit&&localStorage.getItem(P+k)===null)localStorage.setItem(P+k,localStorage.getItem(k));});
+Object.keys(S).forEach(function(n){if(localStorage.getItem(P+n)!==null)return;for(var j=0;j<S[n].length;j++){var v=localStorage.getItem(S[n][j]);if(v!==null){localStorage.setItem(P+n,v);break;}}});
+}catch(e){}})();
 
 // ---------------------------------------------------------------------
 // i18n
@@ -1135,6 +1132,6 @@ document.getElementById("buildVersion").textContent = "build " + BUILD_VERSION;
 
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {
-    navigator.serviceWorker.register("sw.js").catch(err => console.error("SW register failed", err));
+    navigator.serviceWorker.register("./sw.js", { scope: "./" }).catch(err => console.error("SW register failed", err));
   });
 }

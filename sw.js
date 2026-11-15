@@ -1,7 +1,10 @@
 // Cache Storage dùng chung cả origin decoolboy-source.github.io: chỉ xóa cache của chính app này.
-const CACHE_PREFIX = "equip-lookup-";
-const CACHE_NAME = CACHE_PREFIX + "v16";
+const CACHE_PREFIX = "ECselect-";
+// Tiền tố cũ của chính app này (trước khi đổi sang tên repo): vẫn dọn để không để lại cache rác.
+const LEGACY_CACHE_PREFIX = "equip-lookup-";
+const CACHE_NAME = CACHE_PREFIX + "v17";
 const CORE_ASSETS = [
+  "./",
   "./index.html",
   "./style.css",
   "./app.js",
@@ -27,7 +30,7 @@ self.addEventListener("install", event => {
 self.addEventListener("activate", event => {
   event.waitUntil(
     caches.keys().then(keys =>
-      Promise.all(keys.filter(k => k.startsWith(CACHE_PREFIX) && k !== CACHE_NAME).map(k => caches.delete(k)))
+      Promise.all(keys.filter(k => (k.startsWith(CACHE_PREFIX) || k.startsWith(LEGACY_CACHE_PREFIX)) && k !== CACHE_NAME).map(k => caches.delete(k)))
     ).then(() => self.clients.claim())
   );
 });

@@ -89,3 +89,14 @@ Không cần cài Git hay dùng dòng lệnh:
 | Không thấy nút "Cài đặt" trên Chrome | Trang chưa chạy qua HTTPS, hoặc thiếu `manifest.json`/icon | Đảm bảo dùng đúng URL GitHub Pages (tự có HTTPS), không mở bằng `file://` |
 | Sửa `data.js` xong mà app không đổi | Trình duyệt/điện thoại đang dùng bản cache cũ | Tải lại trang cứng (xem mục 6), hoặc đợi thêm — Pages build có độ trễ nhỏ |
 | Lỗi cú pháp JavaScript sau khi dán `data.js` | Dán thiếu/dư dấu ngoặc khi copy | Luôn dùng nguyên văn file tôi gửi, không tự chỉnh sửa thủ công trong khung Edit của GitHub |
+
+## Lịch sử phiên bản
+
+### 2026-11-15 — bản cache `ECselect-v17`
+
+Chuẩn hóa để chạy chung origin `decoolboy-source.github.io` với các PWA khác:
+
+- Service worker đăng ký bằng đường dẫn tương đối: `register('./sw.js', { scope: './' })`.
+- `manifest`: thêm `"id": "./index.html"` (giữ địa chỉ khởi động cũ để app đã cài không bị coi là app mới), `"start_url": "./"`, `"scope": "./"`.
+- Tên cache đổi sang `ECselect-v<số>` (trước là `equip-lookup-v<số>`). Khi kích hoạt chỉ xóa cache của chính app này (cả tiền tố mới và cũ), không đụng cache của app khác.
+- Khóa localStorage có tiền tố `ECselect:` (`lang`, `quoteList`, `quoteProjectInfo`; chép từ khóa `ecselect:*` của bản 2026-11-14 nếu có, nếu không thì từ khóa gốc. Bỏ việc xóa khóa báo giá cũ của bản 2026-11-14). Lần đầu mở bản mới, app tự chép dữ liệu từ khóa cũ sang khóa mới nếu khóa mới chưa có. Khóa cũ được giữ nguyên.
