@@ -100,3 +100,13 @@ Chuẩn hóa để chạy chung origin `decoolboy-source.github.io` với các P
 - `manifest`: thêm `"id": "./index.html"` (giữ địa chỉ khởi động cũ để app đã cài không bị coi là app mới), `"start_url": "./"`, `"scope": "./"`.
 - Tên cache đổi sang `ECselect-v<số>` (trước là `equip-lookup-v<số>`). Khi kích hoạt chỉ xóa cache của chính app này (cả tiền tố mới và cũ), không đụng cache của app khác.
 - Khóa localStorage có tiền tố `ECselect:` (`lang`, `quoteList`, `quoteProjectInfo`; chép từ khóa `ecselect:*` của bản 2026-11-14 nếu có, nếu không thì từ khóa gốc. Bỏ việc xóa khóa báo giá cũ của bản 2026-11-14). Lần đầu mở bản mới, app tự chép dữ liệu từ khóa cũ sang khóa mới nếu khóa mới chưa có. Khóa cũ được giữ nguyên.
+
+#### Xuất/Nhập dữ liệu (cùng bản)
+
+Nút **Xuất dữ liệu** / **Nhập dữ liệu** ở trang Báo giá. File `ECselect_YYYYMMDD.json` chứa danh sách thiết bị và thông tin dự án.
+
+- File gồm các trường `app`, `schemaVersion` (= 1), `exportedAt`, `projectCount`, `data`.
+- Khi nhập: kiểm tra định dạng JSON, đúng `app` và `schemaVersion` **trước khi ghi**; báo số dự án; hỏi **Gộp** hay
+  **Thay thế**; xác nhận lần cuối. File sai định dạng thì báo lỗi tiếng Việt và không ghi gì.
+- Xử lý hoàn toàn trên trình duyệt, không gửi dữ liệu đi đâu.
+- Gộp: thêm thiết bị chưa có (theo nguồn + model), thông tin dự án chỉ điền vào ô trống. Thay thế: ghi đè toàn bộ.

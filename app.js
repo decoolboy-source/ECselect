@@ -70,6 +70,8 @@ const STR = {
   colQty:        { vi: "S\u1ed1 l\u01b0\u1ee3ng", en: "Quantity" },
   removeItem:    { vi: "X\u00f3a", en: "Remove" },
   exportCsv:     { vi: "Xu\u1ea5t file CSV (Excel)", en: "Export CSV (Excel)" },
+  dataExport:    { vi: "Xuất dữ liệu", en: "Export data" },
+  dataImport:    { vi: "Nhập dữ liệu", en: "Import data" },
   exportPrint:   { vi: "In / L\u01b0u PDF", en: "Print / Save PDF" },
   clearAll:      { vi: "X\u00f3a t\u1ea5t c\u1ea3", en: "Clear all" },
   quoteNoteLabel:{ vi: "Ghi ch\u00fa th\u00eam (t\u00f9y ch\u1ecdn)", en: "Additional note (optional)" },
@@ -794,6 +796,10 @@ function renderReport() {
       <button class="primary-btn" id="exportWordBtn">${t("exportWord")}</button>
       <button class="remove-btn" id="clearAllBtn">${t("clearAll")}</button>
     </div>
+    <div class="panel" style="display:flex; gap:10px; flex-wrap:wrap;">
+      <button class="primary-btn" id="dataExportBtn">${t("dataExport")}</button>
+      <button class="primary-btn" id="dataImportBtn">${t("dataImport")}</button>
+    </div>
   `;
 
   appEl.innerHTML = html;
@@ -823,6 +829,8 @@ function renderReport() {
   document.getElementById("exportCsvBtn").addEventListener("click", () => exportQuoteCsv());
   document.getElementById("exportPrintBtn").addEventListener("click", () => exportQuotePrint());
   document.getElementById("exportWordBtn").addEventListener("click", () => exportQuoteWord());
+  document.getElementById("dataExportBtn").addEventListener("click", dataExport);
+  document.getElementById("dataImportBtn").addEventListener("click", dataImport);
 }
 
 function wireProjectInfoInputs() {
@@ -1135,3 +1143,15 @@ if ("serviceWorker" in navigator) {
     navigator.serviceWorker.register("./sw.js", { scope: "./" }).catch(err => console.error("SW register failed", err));
   });
 }
+
+// ---------------------------------------------------------------------
+// Xuất/Nhập dữ liệu (data-io.js): một phiếu dự án = danh sách thiết bị + thông tin dự án.
+// Xử lý hoàn toàn trên trình duyệt, không gửi dữ liệu đi đâu.
+// ---------------------------------------------------------------------
+const DATA_IO = Object.assign({ app: "ECselect", schemaVersion: 1 }, DataIO.singleProjectAdapter({
+  listKey: QUOTE_KEY,
+  objKeys: { projectInfo: PROJECT_INFO_KEY },
+  itemId: it => String(it.sourceId) + "|" + String(it.model)
+}));
+function dataExport() { DataIO.exportData(DATA_IO); }
+function dataImport() { DataIO.importData(DATA_IO); }

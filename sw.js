@@ -8,6 +8,7 @@ const CORE_ASSETS = [
   "./index.html",
   "./style.css",
   "./app.js",
+  "./data-io.js",
   "./data.js",
   "./manifest.json",
   "./icons/icon-192.png",
