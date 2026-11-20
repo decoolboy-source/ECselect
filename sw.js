@@ -2,12 +2,14 @@
 const CACHE_PREFIX = "ECselect-";
 // Tiền tố cũ của chính app này (trước khi đổi sang tên repo): vẫn dọn để không để lại cache rác.
 const LEGACY_CACHE_PREFIX = "equip-lookup-";
-const CACHE_NAME = CACHE_PREFIX + "v17";
+const CACHE_NAME = CACHE_PREFIX + "v19";
 const CORE_ASSETS = [
   "./",
   "./index.html",
+  "./nasa-ui.css",
   "./style.css",
   "./app.js",
+  "./icons.js",
   "./data-io.js",
   "./data.js",
   "./manifest.json",
@@ -36,7 +38,7 @@ self.addEventListener("activate", event => {
   );
 });
 
-const NETWORK_FIRST = ["index.html", "app.js", "data.js", "style.css", "manifest.json"];
+const NETWORK_FIRST = ["index.html", "app.js", "data.js", "style.css", "nasa-ui.css", "icons.js", "manifest.json"];
 
 function isNetworkFirst(url) {
   return NETWORK_FIRST.some(name => url.pathname.endsWith(name)) || url.pathname.endsWith("/");

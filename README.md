@@ -11,7 +11,9 @@ Aircoil...). Chạy như một PWA — cài được trên điện thoại lẫn
 index.html      giao diện chính
 app.js          logic ứng dụng (tính chọn model, nội suy, hiển thị)
 data.js         TOÀN BỘ dữ liệu model — đây là file bạn sẽ sửa khi cập nhật
-style.css       giao diện
+nasa-ui.css     giao diện CHUNG của các app chọn thiết bị (giống hệt ở ECselect/EEselect/MCselect — sửa ở một app rồi chép sang app khác)
+icons.js        bộ icon CHUNG (trích từ Lucide, chạy offline) — cũng chép nguyên sang các app khác
+style.css       phần riêng của app: màu nhấn amber, huy hiệu hãng
 manifest.json   khai báo PWA (tên app, icon, màu...)
 sw.js           service worker — cache để chạy offline
 icons/          icon app (192px, 512px, maskable)

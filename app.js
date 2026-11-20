@@ -1,4 +1,4 @@
-const BUILD_VERSION = "2026-11-14.1";
+const BUILD_VERSION = "2026-11-20.1";
 
 const LS_KEYS = { lang: "ECselect:lang", quoteList: "ECselect:quoteList", quoteProjectInfo: "ECselect:quoteProjectInfo" };
 /* [ECselect] localStorage dùng chung origin với các PWA khác: mọi khóa của app này có tiền tố "ECselect:".
@@ -18,7 +18,7 @@ let LANG = localStorage.getItem(LS_KEYS.lang) || "vi";
 const STR = {
   appTitle:      { vi: "Tra c\u1ee9u thi\u1ebft b\u1ecb gi\u1ea3i nhi\u1ec7t", en: "Cooling Equipment Lookup" },
   home:          { vi: "Trang ch\u1ee7", en: "Home" },
-  back:          { vi: "\u2190 Quay l\u1ea1i", en: "\u2190 Back" },
+  back:          { vi: "Quay l\u1ea1i", en: "Back" },
   chooseSource:  { vi: "Ch\u1ecdn h\u00e3ng / d\u00f2ng s\u1ea3n ph\u1ea9m", en: "Choose a manufacturer / product line" },
   chooseBrand:   { vi: "Ch\u1ecdn h\u00e3ng s\u1ea3n xu\u1ea5t", en: "Choose a manufacturer" },
   chooseProductLine: { vi: "Ch\u1ecdn d\u00f2ng s\u1ea3n ph\u1ea9m", en: "Choose a product line" },
@@ -35,8 +35,8 @@ const STR = {
   correctionFactor:{ vi: "H\u1ec7 s\u1ed1 hi\u1ec7u ch\u1ec9nh (n\u1ed9i suy)", en: "Correction factor (interpolated)" },
   correctedLoad: { vi: "T\u1ea3i tr\u1ecdng hi\u1ec7u ch\u1ec9nh", en: "Corrected load" },
   selectedModel: { vi: "Model \u0111\u1ec1 xu\u1ea5t", en: "Suggested model" },
-  outOfRange:    { vi: "\u26a0\ufe0f C\u1eb7p nhi\u1ec7t \u0111\u1ed9 n\u00e0y n\u1eb1m ngo\u00e0i (ho\u1eb7c kh\u00f4ng h\u1ee3p l\u1ec7 trong) b\u1ea3ng h\u1ec7 s\u1ed1 hi\u1ec7u ch\u1ec9nh c\u1ee7a catalogue \u2014 kh\u00f4ng th\u1ec3 n\u1ed9i suy tin c\u1eady. Vui l\u00f2ng ki\u1ec3m tra l\u1ea1i \u0111i\u1ec1u ki\u1ec7n \u0111\u1ea7u v\u00e0o.", en: "\u26a0\ufe0f This temperature pair is outside (or an invalid combination within) the catalogue's correction table \u2014 cannot interpolate reliably. Please check the input conditions." },
-  noModelFits:   { vi: "\u26a0\ufe0f Kh\u00f4ng c\u00f3 model \u0111\u01a1n n\u00e0o \u0111\u1ee7 c\u00f4ng su\u1ea5t \u2014 c\u1ea7n gh\u00e9p nhi\u1ec1u d\u00e0n ho\u1eb7c li\u00ean h\u1ec7 nh\u00e0 cung c\u1ea5p.", en: "\u26a0\ufe0f No single model has enough capacity \u2014 multiple units or manufacturer consultation needed." },
+  outOfRange:    { vi: "C\u1eb7p nhi\u1ec7t \u0111\u1ed9 n\u00e0y n\u1eb1m ngo\u00e0i (ho\u1eb7c kh\u00f4ng h\u1ee3p l\u1ec7 trong) b\u1ea3ng h\u1ec7 s\u1ed1 hi\u1ec7u ch\u1ec9nh c\u1ee7a catalogue \u2014 kh\u00f4ng th\u1ec3 n\u1ed9i suy tin c\u1eady. Vui l\u00f2ng ki\u1ec3m tra l\u1ea1i \u0111i\u1ec1u ki\u1ec7n \u0111\u1ea7u v\u00e0o.", en: "This temperature pair is outside (or an invalid combination within) the catalogue's correction table \u2014 cannot interpolate reliably. Please check the input conditions." },
+  noModelFits:   { vi: "Kh\u00f4ng c\u00f3 model \u0111\u01a1n n\u00e0o \u0111\u1ee7 c\u00f4ng su\u1ea5t \u2014 c\u1ea7n gh\u00e9p nhi\u1ec1u d\u00e0n ho\u1eb7c li\u00ean h\u1ec7 nh\u00e0 cung c\u1ea5p.", en: "No single model has enough capacity \u2014 multiple units or manufacturer consultation needed." },
   viewFullSpec:  { vi: "Xem th\u00f4ng s\u1ed1 \u0111\u1ea7y \u0111\u1ee7", en: "View full specification" },
   selectionProcedure: { vi: "Quy tr\u00ecnh ch\u1ecdn model (theo catalogue)", en: "Model selection procedure (per catalogue)" },
   usedGridPoints:{ vi: "\u0110i\u1ec3m l\u01b0\u1edbi d\u00f9ng \u0111\u1ec3 n\u1ed9i suy", en: "Grid points used for interpolation" },
@@ -61,7 +61,7 @@ const STR = {
   catalogueNotes:{ vi: "Ghi ch\u00fa t\u1eeb catalogue", en: "Catalogue notes" },
   noCorrectionNote:{ vi: "T\u00e0i li\u1ec7u n\u00e0y kh\u00f4ng cung c\u1ea5p b\u1ea3ng h\u1ec7 s\u1ed1 hi\u1ec7u ch\u1ec9nh theo nhi\u1ec7t \u0111\u1ed9 ng\u01b0ng t\u1ee5/b\u1ea7u \u01b0\u1edbt \u2014 ch\u1ecdn model tr\u1ef1c ti\u1ebfp theo c\u00f4ng su\u1ea5t nhi\u1ec7t th\u1ea3i c\u01a1 b\u1ea3n.", en: "This catalogue does not publish a condensing/wet-bulb correction table \u2014 model is selected directly against the base heat rejection rating." },
   addToQuote:    { vi: "Th\u00eam v\u00e0o b\u00e1o c\u00e1o \u0111\u1ec3 h\u1ecfi gi\u00e1", en: "Add to quote report" },
-  addedToQuote:  { vi: "\u2713 \u0110\u00e3 th\u00eam v\u00e0o b\u00e1o c\u00e1o", en: "\u2713 Added to report" },
+  addedToQuote:  { vi: "\u0110\u00e3 th\u00eam v\u00e0o b\u00e1o c\u00e1o", en: "Added to report" },
   quoteReport:   { vi: "B\u00e1o c\u00e1o thi\u1ebft b\u1ecb \u0111\u00e3 ch\u1ecdn", en: "Selected equipment report" },
   quoteEmpty:    { vi: "Ch\u01b0a c\u00f3 thi\u1ebft b\u1ecb n\u00e0o trong b\u00e1o c\u00e1o. V\u00e0o trang th\u00f4ng s\u1ed1 c\u1ee7a m\u1ed9t model v\u00e0 b\u1ea5m \u201cTh\u00eam v\u00e0o b\u00e1o c\u00e1o\u201d.", en: "No equipment in the report yet. Open a model's spec page and tap \u201cAdd to quote report\u201d." },
   colBrand:      { vi: "H\u00e3ng", en: "Brand" },
@@ -102,8 +102,19 @@ const STR = {
   reqOptionalNote:{ vi: "(t\u00f9y ch\u1ecdn \u2014 ghi l\u1ea1i \u0111i\u1ec1u ki\u1ec7n thi\u1ebft k\u1ebf d\u00f9ng \u0111\u1ec3 ch\u1ecdn model n\u00e0y)", en: "(optional \u2014 record the design condition used to select this model)" },
   docTitle:      { vi: "PHIẾU YÊU CẦU BÁO GIÁ THIẾT BỊ", en: "EQUIPMENT QUOTE REQUEST" },
   signatureLabel:{ vi: "Ng\u01b0\u1eddi l\u1eadp b\u00e1o c\u00e1o", en: "Prepared by" },
-  printAgain:    { vi: "\ud83d\udda8\ufe0f In l\u1ea1i", en: "\ud83d\udda8\ufe0f Print again" },
-  closeWindow:   { vi: "\u2715 \u0110\u00f3ng", en: "\u2715 Close" }
+  appSub:        { vi: "Dàn ngưng bay hơi · Tháp giải nhiệt", en: "Evaporative condensers · Cooling towers" },
+  heroLead:      { vi: "Chọn hãng và dòng sản phẩm, nhập điều kiện thiết kế để tìm model phù hợp, rồi thêm vào phiếu yêu cầu báo giá.", en: "Pick a manufacturer and product line, enter the design condition to find a matching model, then add it to the quote request." },
+  statBrands:    { vi: "Hãng", en: "Brands" },
+  statLines:     { vi: "Dòng sản phẩm", en: "Product lines" },
+  statModels:    { vi: "Model", en: "Models" },
+  equipList:     { vi: "Danh mục thiết bị", en: "Equipment list" },
+  navHome:       { vi: "Trang chủ", en: "Home" },
+  navReport:     { vi: "Báo cáo", en: "Report" },
+  kindCondenser: { vi: "Dàn ngưng", en: "Condenser" },
+  kindTower:     { vi: "Tháp giải nhiệt", en: "Cooling tower" },
+  modelsFound:   { vi: "model trong dòng sản phẩm", en: "models in this line" },
+  printAgain:    { vi: "In l\u1ea1i", en: "Print again" },
+  closeWindow:   { vi: "\u0110\u00f3ng", en: "Close" }
 };
 
 function t(key) { return (STR[key] && STR[key][LANG]) || key; }
@@ -137,7 +148,34 @@ function brandsInUse() {
   });
   return keys;
 }
-const KIND_ICON = { coolingtower: "\ud83d\uddfc\ufe0f", condenser: "\ud83c\udf00" };
+function kindChip(kind) {
+  const key = kind === "coolingtower" ? "kindTower" : kind === "condenser" ? "kindCondenser" : null;
+  return key ? `<span class="ui-chip">${uiIcon(kind === "coolingtower" ? "wind" : "fan")}${t(key)}</span>` : "";
+}
+const CHEVRON = uiIcon("chevron-right", "ui-card-chevron");
+// \u0110\u1ea7u trang d\u00f9ng chung: n\u00fat quay l\u1ea1i (t\u00f9y ch\u1ecdn) + huy hi\u1ec7u + ti\u00eau \u0111\u1ec1 + d\u00f2ng ph\u1ee5
+function pageHead(opts) {
+  return `
+    ${opts.back ? `<button type="button" class="ui-btn-link ui-back">${uiIcon("arrow-left", "ui-icon-sm")}${t("back")}</button>` : ""}
+    <div class="ui-page-head">
+      ${opts.badge || ""}
+      <div class="ui-page-head-text">
+        <h1 class="ui-title">${opts.title}</h1>
+        ${opts.sub ? `<p class="ui-subtitle">${opts.sub}</p>` : ""}
+      </div>
+    </div>`;
+}
+function sectionTitle(icon, text, count) {
+  return `<h2 class="ui-section-title">${uiIcon(icon)}<span>${text}</span>${count != null ? `<span class="ui-count-text">${count}</span>` : ""}</h2>`;
+}
+function alertBox(kind, html) {
+  const icon = kind === "ok" ? "circle-check" : kind === "warn" ? "triangle-alert" : "info";
+  return `<div class="ui-alert ui-alert-${kind}">${uiIcon(icon)}<div class="ui-alert-body">${html}</div></div>`;
+}
+function metaItem(icon, text) { return `<span class="ui-meta-item">${uiIcon(icon)}${text}</span>`; }
+function field(label, inputHtml) {
+  return `<label class="ui-field"><span class="ui-label">${label}</span>${inputHtml}</label>`;
+}
 function brandOf(src) {
   const prefix = src.id.split("-")[0];
   return BRANDS[prefix] || { badge: "EQ", color: "#c9d1d9" };
@@ -247,8 +285,11 @@ function clearQuoteList() {
   refreshQuoteBadge();
 }
 function refreshQuoteBadge() {
-  const el = document.getElementById("quoteCount");
-  if (el) el.textContent = String(loadQuoteList().length);
+  const n = String(loadQuoteList().length);
+  ["quoteCount", "quoteCountMobile"].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = n;
+  });
 }
 
 // Project info + commercial terms header (persisted separately from the equipment list itself)
@@ -275,33 +316,42 @@ function updateProjectInfoField(field, value) {
 // full, non-abbreviated spec lines per model, reusing whatever fields that model kind has
 // (mirrors what renderSpec shows on the model's own detail page). "requirement" is the
 // optional design condition the user entered when this item was added to the report.
+// Định dạng số cho báo cáo theo ngôn ngữ: VI 1.250,5 / EN 1,250.5
+function fmtNum(v) {
+  if (v == null || v === "") return v;
+  const n = typeof v === "number" ? v : (/^-?\d+(\.\d+)?$/.test(String(v).trim()) ? parseFloat(v) : NaN);
+  if (isNaN(n)) return v;
+  return n.toLocaleString(LANG === "vi" ? "vi-VN" : "en-US", { maximumFractionDigits: 3 });
+}
+
 function quoteFullSpecLines(src, m, requirement) {
+  const f = fmtNum;
   const lines = [];
   if (requirement && Object.keys(requirement).length) {
     const reqParts = [];
-    if (requirement.load != null && requirement.load !== "") reqParts.push(`${t("reqCapacity")} ${requirement.load}`);
-    if (requirement.flow != null && requirement.flow !== "") reqParts.push(`${t("reqFlow")} ${requirement.flow}`);
-    if (requirement.condTemp != null && requirement.condTemp !== "") reqParts.push(`${t("reqCondTemp")} ${requirement.condTemp}`);
-    if (requirement.wetBulb != null && requirement.wetBulb !== "") reqParts.push(`${t("reqWetBulb")} ${requirement.wetBulb}`);
+    if (requirement.load != null && requirement.load !== "") reqParts.push(`${t("reqCapacity")} ${f(requirement.load)}`);
+    if (requirement.flow != null && requirement.flow !== "") reqParts.push(`${t("reqFlow")} ${f(requirement.flow)}`);
+    if (requirement.condTemp != null && requirement.condTemp !== "") reqParts.push(`${t("reqCondTemp")} ${f(requirement.condTemp)}`);
+    if (requirement.wetBulb != null && requirement.wetBulb !== "") reqParts.push(`${t("reqWetBulb")} ${f(requirement.wetBulb)}`);
     if (reqParts.length) lines.push(`${t("reqConditionLabel")}: ${reqParts.join(", ")}`);
   }
   if (src.kind === "condenser") {
-    lines.push(`${t("heatRejection")}: ${m.heatRejection} kW`);
-    lines.push(`${t("fan")}: ${t("qty")} ${m.fanQty} \u00d7 ${t("airFlow")} ${m.fanAirFlow} m\u00b3/h, ${t("power")} ${m.fanPower} kW`);
-    if (m.pumpFlow != null) lines.push(`${t("pump")}: ${t("qty")} ${m.pumpQty || 1} \u00d7 ${t("flow")} ${m.pumpFlow} m\u00b3/h, ${t("power")} ${m.pumpPower} kW`);
-    if (m.ammonia != null) lines.push(`${t("ammonia")}: ${m.ammonia} kg`);
+    lines.push(`${t("heatRejection")}: ${f(m.heatRejection)} kW`);
+    lines.push(`${t("fan")}: ${t("qty")} ${f(m.fanQty)} \u00d7 ${t("airFlow")} ${f(m.fanAirFlow)} m\u00b3/h, ${t("power")} ${f(m.fanPower)} kW`);
+    if (m.pumpFlow != null) lines.push(`${t("pump")}: ${t("qty")} ${f(m.pumpQty || 1)} \u00d7 ${t("flow")} ${f(m.pumpFlow)} m\u00b3/h, ${t("power")} ${f(m.pumpPower)} kW`);
+    if (m.ammonia != null) lines.push(`${t("ammonia")}: ${f(m.ammonia)} kg`);
     if (m.pipeDN) lines.push(`DN: ${m.pipeDN}`);
-    lines.push(`${t("dims")}: ${m.A}\u00d7${m.B}\u00d7${m.H} mm`);
-    lines.push(`${t("shipWeight")}: ${m.shipWeight} kg`);
-    lines.push(`${t("operWeight")}: ${m.operWeight} kg`);
+    lines.push(`${t("dims")}: ${f(m.A)}\u00d7${f(m.B)}\u00d7${f(m.H)} mm`);
+    lines.push(`${t("shipWeight")}: ${f(m.shipWeight)} kg`);
+    lines.push(`${t("operWeight")}: ${f(m.operWeight)} kg`);
   } else if (src.kind === "coolingtower") {
-    lines.push(`${t("nominalFlow")}: ${m.flow != null ? m.flow + " m\u00b3/h" : "\u2014"}`);
-    lines.push(`${t("fan")}: ${t("qty")} ${m.fanQty} \u00d7 ${t("airFlow")} ${m.fanAirFlow} m\u00b3/h, ${t("power")} ${m.fanPower} kW`);
-    if (m.pumpFlow != null) lines.push(`${t("pump")}: ${t("qty")} ${m.pumpQty || 1} \u00d7 ${t("flow")} ${m.pumpFlow} m\u00b3/h, ${t("power")} ${m.pumpPower} kW`);
+    lines.push(`${t("nominalFlow")}: ${m.flow != null ? f(m.flow) + " m\u00b3/h" : "\u2014"}`);
+    lines.push(`${t("fan")}: ${t("qty")} ${f(m.fanQty)} \u00d7 ${t("airFlow")} ${f(m.fanAirFlow)} m\u00b3/h, ${t("power")} ${f(m.fanPower)} kW`);
+    if (m.pumpFlow != null) lines.push(`${t("pump")}: ${t("qty")} ${f(m.pumpQty || 1)} \u00d7 ${t("flow")} ${f(m.pumpFlow)} m\u00b3/h, ${t("power")} ${f(m.pumpPower)} kW`);
     if (m.pipeDN) lines.push(`DN: ${m.pipeDN}`);
-    lines.push(`${t("dims")}: ${m.A}\u00d7${m.B}\u00d7${m.H} mm`);
-    lines.push(`${t("shipWeight")}: ${m.shipWeight} kg`);
-    lines.push(`${t("operWeight")}: ${m.operWeight} kg`);
+    lines.push(`${t("dims")}: ${f(m.A)}\u00d7${f(m.B)}\u00d7${f(m.H)} mm`);
+    lines.push(`${t("shipWeight")}: ${f(m.shipWeight)} kg`);
+    lines.push(`${t("operWeight")}: ${f(m.operWeight)} kg`);
     lines.push(`${t("designCondition")}: ${src.designCondition[LANG]}`);
   }
   return lines;
@@ -329,23 +379,35 @@ function renderHome() {
     const modelCount = sources.reduce((sum, s) => sum + s.models.length, 0);
     const lineNames = sources.map(s => s.name[LANG]).join(", ");
     return `
-      <button class="card source-card" data-brand="${key}">
+      <button type="button" class="ui-card source-card" data-brand="${key}">
         <div class="brand-badge lg" style="background:${brand.color}">${brand.badge}</div>
-        <div class="card-body">
-          <div class="card-title-row">
-            <span class="card-title">${brand.name}</span>
-          </div>
-          <div class="card-sub">${sources.length} ${t("productLines")} \u00b7 ${modelCount} ${t("modelsTotal")}</div>
-          <div class="card-desc">${lineNames}</div>
+        <div class="ui-card-body">
+          <div class="ui-card-title">${brand.name}</div>
+          <div class="ui-card-meta">${metaItem("layers", `${sources.length} ${t("productLines")}`)}${metaItem("boxes", `${modelCount} ${t("modelsTotal")}`)}</div>
+          <div class="ui-card-desc">${lineNames}</div>
         </div>
-      </button>
-    `;
+        ${CHEVRON}
+      </button>`;
   }).join("");
 
+  const totalLines = DATABASE.sources.length;
+  const totalModels = DATABASE.sources.reduce((sum, s) => sum + s.models.length, 0);
+  const stat = (icon, value, label) => `<div class="ui-stat"><span class="ui-stat-value">${value}</span><span class="ui-stat-label">${uiIcon(icon)}${label}</span></div>`;
   appEl.innerHTML = `
-    <h2>${t("chooseBrand")}</h2>
-    <div class="card-grid">${cards}</div>
-    <p class="muted">${t("moreSourcesNote")}</p>
+    <section class="ui-hero">
+      <div>
+        <h1 class="ui-title">${t("appTitle")}</h1>
+        <p class="ui-hero-lead">${t("heroLead")}</p>
+      </div>
+      <div class="ui-stats">
+        ${stat("factory", brandKeys.length, t("statBrands"))}
+        ${stat("layers", totalLines, t("statLines"))}
+        ${stat("boxes", totalModels, t("statModels"))}
+      </div>
+    </section>
+    <p class="ui-section-label">${t("chooseBrand")}</p>
+    <div class="ui-card-grid">${cards}</div>
+    <p class="ui-muted ui-small" style="margin:16px 0 0">${t("moreSourcesNote")}</p>
   `;
 
   appEl.querySelectorAll(".source-card").forEach(el => {
@@ -359,125 +421,105 @@ function renderBrand(brandId) {
   if (!sources.length) return renderHome();
 
   const cards = sources.map(s => `
-    <button class="card source-card" data-source="${s.id}">
+    <button type="button" class="ui-card source-card" data-source="${s.id}">
       ${brandBadgeHtml(s)}
-      <div class="card-body">
-        <div class="card-title-row">
-          <span class="card-title">${s.name[LANG]}</span>
-          <span class="card-kind-icon">${KIND_ICON[s.kind] || ""}</span>
-        </div>
-        <div class="card-sub">${s.models.length} ${t("modelsTotal")}</div>
-        <div class="card-desc">${s.shortDesc[LANG]}</div>
+      <div class="ui-card-body">
+        <div class="ui-card-title">${s.name[LANG]}</div>
+        <div class="ui-card-meta">${kindChip(s.kind)}${metaItem("boxes", `${s.models.length} ${t("modelsTotal")}`)}</div>
+        <div class="ui-card-desc">${s.shortDesc[LANG]}</div>
       </div>
+      ${CHEVRON}
     </button>
   `).join("");
 
   appEl.innerHTML = `
-    <button class="back-btn">${t("back")}</button>
-    <div class="detail-header">
-      <div class="brand-badge lg" style="background:${brand.color}">${brand.badge}</div>
-      <div><h2 class="no-margin">${brand.name}</h2></div>
-    </div>
-    <h3>${t("chooseProductLine")}</h3>
-    <div class="card-grid">${cards}</div>
+    ${pageHead({ back: true, badge: `<div class="brand-badge lg" style="background:${brand.color}">${brand.badge}</div>`, title: brand.name, sub: `${sources.length} ${t("productLines")}` })}
+    <p class="ui-section-label" style="margin-top:0">${t("chooseProductLine")}</p>
+    <div class="ui-card-grid">${cards}</div>
   `;
 
-  appEl.querySelector(".back-btn").addEventListener("click", () => render({ name: "home" }));
+  appEl.querySelector(".ui-back").addEventListener("click", () => render({ name: "home" }));
   appEl.querySelectorAll(".source-card").forEach(el => {
     el.addEventListener("click", () => render({ name: "source", sourceId: el.dataset.source }));
   });
 }
 
+function numInput(id, opts) {
+  const o = opts || {};
+  return `<input class="ui-input" type="number" inputmode="decimal" id="${id}"${o.min != null ? ` min="${o.min}"` : ""} step="${o.step || "any"}"${o.placeholder ? ` placeholder="${o.placeholder}"` : ""}${o.value != null ? ` value="${o.value}"` : ""}>`;
+}
+
+// Bố cục chung: cột trái (PC) = nhập điều kiện + quy trình chọn; cột phải = bảng model.
+// Điện thoại: xếp 1 cột theo đúng thứ tự đó.
 function renderSource(sourceId) {
   const src = DATABASE.sources.find(s => s.id === sourceId);
   if (!src) return renderHome();
 
-  let html = `<button class="back-btn">${t("back")}</button>
-    <div class="detail-header">
-      ${brandBadgeHtml(src, "lg")}
-      <div>
-        <h2>${src.name[LANG]}</h2>
-        <p class="muted no-margin">${src.manufacturer}</p>
-      </div>
-    </div>`;
-
+  let finder = "", info = "", table = "", notes = "";
   if (src.kind === "condenser" && src.correctionTables) {
-    html += `
-      <div class="panel">
-        <h3>${t("selectionProcedure")}</h3>
-        <ol>${src.selectionProcedure[LANG].map(l => `<li>${l}</li>`).join("")}</ol>
-      </div>
-      <div class="panel">
-        <h3>${t("findByCap")}</h3>
-        <label>${t("refrigerant")}</label>
-        <select id="refrig">
-          ${Object.keys(src.correctionTables).map(k => `<option value="${k}">${REFRIG_LABELS[k] || k}</option>`).join("")}
-        </select>
-        <label>${t("requiredHeatRej")}</label>
-        <input type="number" id="reqLoad" min="0" step="1" placeholder="e.g. 940">
-        <label>${t("condTemp")}</label>
-        <input type="number" id="condTemp" step="0.1" placeholder="e.g. 36">
-        <label>${t("wetBulbTemp")}</label>
-        <input type="number" id="wetBulb" step="0.1" placeholder="e.g. 29">
-        <button class="primary-btn" id="calcCondBtn">${t("calculate")}</button>
-        <div id="condResult"></div>
-      </div>
-      <div class="panel">
-        <h3>${t("allModels")}</h3>
-        ${renderCondenserTable(src)}
-      </div>
-    `;
-  } else if (src.kind === "condenser" && !src.correctionTables) {
-    html += `
-      <div class="panel">
-        <h3>${t("selectionProcedure")}</h3>
-        <ol>${src.selectionProcedure[LANG].map(l => `<li>${l}</li>`).join("")}</ol>
-      </div>
-      <div class="panel">
-        <h3>${t("findByCap")}</h3>
-        <p class="muted small">${t("noCorrectionNote")}</p>
-        <label>${t("requiredHeatRej")}</label>
-        <input type="number" id="reqLoadDirect" min="0" step="1" placeholder="e.g. 900">
-        <button class="primary-btn" id="calcCondDirectBtn">${t("calculate")}</button>
-        <div id="condDirectResult"></div>
-      </div>
-      <div class="panel">
-        <h3>${t("allModels")}</h3>
-        ${renderCondenserTable(src)}
-      </div>
-    `;
+    finder = `
+      ${field(t("refrigerant"), `<select id="refrig" class="ui-select">
+        ${Object.keys(src.correctionTables).map(k => `<option value="${k}">${REFRIG_LABELS[k] || k}</option>`).join("")}
+      </select>`)}
+      ${field(t("requiredHeatRej"), numInput("reqLoad", { min: 0, step: 1, placeholder: "940" }))}
+      ${field(t("condTemp"), numInput("condTemp", { step: 0.1, placeholder: "36" }))}
+      ${field(t("wetBulbTemp"), numInput("wetBulb", { step: 0.1, placeholder: "29" }))}
+      <button type="button" class="ui-btn ui-btn-primary ui-btn-block" id="calcCondBtn">${uiIcon("calculator")}${t("calculate")}</button>
+      <div id="condResult"></div>`;
+    info = procedurePanel(src);
+    table = renderCondenserTable(src);
+  } else if (src.kind === "condenser") {
+    finder = `
+      <p class="ui-muted ui-small" style="margin:0 0 12px">${t("noCorrectionNote")}</p>
+      ${field(t("requiredHeatRej"), numInput("reqLoadDirect", { min: 0, step: 1, placeholder: "900" }))}
+      <button type="button" class="ui-btn ui-btn-primary ui-btn-block" id="calcCondDirectBtn">${uiIcon("calculator")}${t("calculate")}</button>
+      <div id="condDirectResult"></div>`;
+    info = procedurePanel(src);
+    table = renderCondenserTable(src);
   } else if (src.kind === "coolingtower") {
-    html += `
-      <div class="panel">
-        <h3>${t("designCondition")}</h3>
-        <p>${src.designCondition[LANG]}</p>
-      </div>
-      <div class="panel">
-        <h3>${t("findByCap")}</h3>
-        <label>${t("requiredFlow")}</label>
-        <input type="number" id="reqFlow" min="0" step="1" placeholder="e.g. 250">
-        <button class="primary-btn" id="calcTowerBtn">${t("calculate")}</button>
-        <div id="towerResult"></div>
-      </div>
-      <div class="panel">
-        <h3>${t("allModels")}</h3>
-        ${renderTowerTable(src)}
-      </div>
-      <div class="panel">
-        <h4>${t("catalogueNotes")}</h4>
-        <ul>${src.notes[LANG].map(l => `<li>${l}</li>`).join("")}</ul>
-      </div>
-    `;
+    finder = `
+      ${field(t("requiredFlow"), numInput("reqFlow", { min: 0, step: 1, placeholder: "250" }))}
+      <button type="button" class="ui-btn ui-btn-primary ui-btn-block" id="calcTowerBtn">${uiIcon("calculator")}${t("calculate")}</button>
+      <div id="towerResult"></div>`;
+    info = `
+      <div class="ui-panel">
+        ${sectionTitle("thermometer", t("designCondition"))}
+        <p class="ui-small ui-muted" style="margin:0">${src.designCondition[LANG]}</p>
+      </div>`;
+    table = renderTowerTable(src);
+    notes = `
+      <div class="ui-panel">
+        ${sectionTitle("book-open", t("catalogueNotes"))}
+        <ul class="ui-list">${src.notes[LANG].map(l => `<li>${l}</li>`).join("")}</ul>
+      </div>`;
   }
 
-  html += `<p class="muted small">${t("dataSourceNote")}</p>`;
-  appEl.innerHTML = html;
+  appEl.innerHTML = `
+    ${pageHead({ back: true, badge: brandBadgeHtml(src, "lg"), title: src.name[LANG], sub: `${src.manufacturer} ${kindChip(src.kind)}` })}
+    <div class="ui-split">
+      <aside class="ui-aside ui-stack">
+        <div class="ui-panel ui-panel-accent">
+          ${sectionTitle("search", t("findByCap"))}
+          ${finder}
+        </div>
+        ${info}
+      </aside>
+      <section class="ui-stack">
+        <div class="ui-panel">
+          ${sectionTitle("list", t("allModels"), src.models.length)}
+          ${table}
+        </div>
+        ${notes}
+        <p class="ui-muted ui-small" style="margin:0">${t("dataSourceNote")}</p>
+      </section>
+    </div>
+  `;
 
-  appEl.querySelector(".back-btn").addEventListener("click", () => render({ name: "brand", brandId: brandKeyOf(src) }));
+  appEl.querySelector(".ui-back").addEventListener("click", () => render({ name: "brand", brandId: brandKeyOf(src) }));
 
   if (src.kind === "condenser" && src.correctionTables) {
     document.getElementById("calcCondBtn").addEventListener("click", () => calcCondenser(src));
-  } else if (src.kind === "condenser" && !src.correctionTables) {
+  } else if (src.kind === "condenser") {
     document.getElementById("calcCondDirectBtn").addEventListener("click", () => calcCondenserDirect(src));
   } else if (src.kind === "coolingtower") {
     document.getElementById("calcTowerBtn").addEventListener("click", () => calcTower(src));
@@ -488,30 +530,54 @@ function renderSource(sourceId) {
   });
 }
 
+function procedurePanel(src) {
+  return `
+    <div class="ui-panel">
+      ${sectionTitle("list-checks", t("selectionProcedure"))}
+      <ol class="ui-list">${src.selectionProcedure[LANG].map(l => `<li>${l}</li>`).join("")}</ol>
+    </div>`;
+}
+
 function renderCondenserTable(src) {
   const rows = src.models.map(m => `
-    <tr class="model-row" data-model="${m.model}">
-      <td>${m.model}</td><td>${m.heatRejection}</td><td>${m.ammonia != null ? m.ammonia : "\u2014"}</td>
-      <td>${m.A}\u00d7${m.B}\u00d7${m.H}</td><td>${m.operWeight}</td>
+    <tr class="ui-row-link model-row" data-model="${m.model}">
+      <td>${m.model}</td><td class="ui-num">${m.heatRejection}</td><td class="ui-num">${m.ammonia != null ? m.ammonia : "—"}</td>
+      <td>${m.A}×${m.B}×${m.H}</td><td class="ui-num">${m.operWeight}</td>
     </tr>`).join("");
   return `
-    <div class="table-wrap"><table>
-      <thead><tr><th>${t("model")}</th><th>${t("heatRejection")}</th><th>NH3 (kg)</th><th>A\u00d7B\u00d7H (mm)</th><th>${t("operWeight")}</th></tr></thead>
+    <div class="ui-table-wrap"><table class="ui-table ui-table-data ui-table-sticky-first">
+      <thead><tr><th>${t("model")}</th><th class="ui-num">${t("heatRejection")}</th><th class="ui-num">NH3 (kg)</th><th>A×B×H (mm)</th><th class="ui-num">${t("operWeight")}</th></tr></thead>
       <tbody>${rows}</tbody>
     </table></div>`;
 }
 
 function renderTowerTable(src) {
   const rows = src.models.map(m => `
-    <tr class="model-row" data-model="${m.model}">
-      <td>${m.model}</td><td>${m.flow != null ? m.flow : "\u2014"}</td>
-      <td>${m.A}\u00d7${m.B}\u00d7${m.H}</td><td>${m.operWeight}</td>
+    <tr class="ui-row-link model-row" data-model="${m.model}">
+      <td>${m.model}</td><td class="ui-num">${m.flow != null ? m.flow : "—"}</td>
+      <td>${m.A}×${m.B}×${m.H}</td><td class="ui-num">${m.operWeight}</td>
     </tr>`).join("");
   return `
-    <div class="table-wrap"><table>
-      <thead><tr><th>${t("model")}</th><th>${t("nominalFlow")}</th><th>${t("dims")}</th><th>${t("operWeight")}</th></tr></thead>
+    <div class="ui-table-wrap"><table class="ui-table ui-table-data ui-table-sticky-first">
+      <thead><tr><th>${t("model")}</th><th class="ui-num">${t("nominalFlow")}</th><th>${t("dims")}</th><th class="ui-num">${t("operWeight")}</th></tr></thead>
       <tbody>${rows}</tbody>
     </table></div>`;
+}
+
+// Tô dòng model được chọn trong bảng (hoặc bỏ tô khi không có)
+function highlightFit(model) {
+  appEl.querySelectorAll("tr.model-row").forEach(tr => {
+    tr.classList.toggle("ui-row-hit", !!model && tr.dataset.model === model);
+  });
+}
+
+function fitAlert(fit, lines) {
+  return `
+    ${alertBox("ok", `
+      <div class="ui-result-label">${t("selectedModel")}</div>
+      <div class="ui-result-model">${fit.model}</div>
+      ${lines.map(l => `<div>${l}</div>`).join("")}
+      <button type="button" class="ui-btn-link" id="viewSpecBtn">${t("viewFullSpec")}${uiIcon("arrow-right", "ui-icon-sm")}</button>`)}`;
 }
 
 function calcCondenser(src) {
@@ -521,13 +587,14 @@ function calcCondenser(src) {
   const wb = parseFloat(document.getElementById("wetBulb").value);
   const resEl = document.getElementById("condResult");
 
-  if (!load || load <= 0 || isNaN(condT) || isNaN(wb)) { resEl.innerHTML = ""; return; }
+  if (!load || load <= 0 || isNaN(condT) || isNaN(wb)) { resEl.innerHTML = ""; highlightFit(null); return; }
 
   const table = src.correctionTables[refrig];
   const interp = interpolate2D(table, condT, wb);
 
   if (!interp) {
-    resEl.innerHTML = `<div class="result-box warn">${t("outOfRange")}</div>`;
+    resEl.innerHTML = alertBox("warn", t("outOfRange"));
+    highlightFit(null);
     return;
   }
 
@@ -537,28 +604,20 @@ function calcCondenser(src) {
   const fit = sorted.find(m => m.heatRejection >= corrected);
 
   const c = interp.corners;
-  const gridNote = `${t("usedGridPoints")}: (${c.ct0}\u00b0C,${c.wb0}\u00b0C)=${c.v00} \u00b7 (${c.ct0}\u00b0C,${c.wb1}\u00b0C)=${c.v01} \u00b7 (${c.ct1}\u00b0C,${c.wb0}\u00b0C)=${c.v10} \u00b7 (${c.ct1}\u00b0C,${c.wb1}\u00b0C)=${c.v11}`;
+  const gridNote = `${t("usedGridPoints")}: (${c.ct0}°C,${c.wb0}°C)=${c.v00} · (${c.ct0}°C,${c.wb1}°C)=${c.v01} · (${c.ct1}°C,${c.wb0}°C)=${c.v10} · (${c.ct1}°C,${c.wb1}°C)=${c.v11}`;
 
-  let modelHtml;
-  if (!fit) {
-    modelHtml = `<div class="result-box warn">${t("noModelFits")}</div>`;
-  } else {
-    modelHtml = `
-      <div class="result-box ok">
-        <div><strong>${t("selectedModel")}:</strong> ${fit.model}</div>
-        <div>${t("heatRejection")}: ${fit.heatRejection} kW</div>
-        <button class="link-btn" id="viewSpecBtn">${t("viewFullSpec")} \u2192</button>
-      </div>`;
-  }
+  const modelHtml = fit
+    ? fitAlert(fit, [`${t("heatRejection")}: <strong>${fit.heatRejection} kW</strong>`])
+    : alertBox("warn", t("noModelFits"));
 
   resEl.innerHTML = `
-    <div class="result-box info">
+    ${alertBox("info", `
       <div>${t("correctionFactor")}: <strong>${factor.toFixed(3)}</strong></div>
-      <div class="tiny muted">${gridNote}</div>
-      <div>${t("correctedLoad")}: <strong>${corrected.toFixed(1)} kW</strong> (${load} \u00d7 ${factor.toFixed(3)})</div>
-    </div>
+      <div>${t("correctedLoad")}: <strong>${corrected.toFixed(1)} kW</strong> (${load} × ${factor.toFixed(3)})</div>
+      <div class="ui-tiny ui-mono" style="margin-top:4px;opacity:.8">${gridNote}</div>`)}
     ${modelHtml}
   `;
+  highlightFit(fit ? fit.model : null);
   const btn = document.getElementById("viewSpecBtn");
   if (btn) btn.addEventListener("click", () => render({ name: "spec", sourceId: src.id, model: fit.model, reqInfo: { load, condTemp: condT, wetBulb: wb } }));
 }
@@ -566,21 +625,18 @@ function calcCondenser(src) {
 function calcCondenserDirect(src) {
   const load = parseFloat(document.getElementById("reqLoadDirect").value);
   const resEl = document.getElementById("condDirectResult");
-  if (!load || load <= 0) { resEl.innerHTML = ""; return; }
+  if (!load || load <= 0) { resEl.innerHTML = ""; highlightFit(null); return; }
 
   const sorted = [...src.models].sort((a, b) => a.heatRejection - b.heatRejection);
   const fit = sorted.find(m => m.heatRejection >= load);
 
   if (!fit) {
-    resEl.innerHTML = `<div class="result-box warn">${t("noModelFits")}</div>`;
+    resEl.innerHTML = alertBox("warn", t("noModelFits"));
+    highlightFit(null);
     return;
   }
-  resEl.innerHTML = `
-    <div class="result-box ok">
-      <div><strong>${t("selectedModel")}:</strong> ${fit.model}</div>
-      <div>${t("heatRejection")}: ${fit.heatRejection} kW</div>
-      <button class="link-btn" id="viewSpecBtn">${t("viewFullSpec")} \u2192</button>
-    </div>`;
+  resEl.innerHTML = fitAlert(fit, [`${t("heatRejection")}: <strong>${fit.heatRejection} kW</strong>`]);
+  highlightFit(fit.model);
   document.getElementById("viewSpecBtn").addEventListener("click", () =>
     render({ name: "spec", sourceId: src.id, model: fit.model, reqInfo: { load } }));
 }
@@ -588,111 +644,89 @@ function calcCondenserDirect(src) {
 function calcTower(src) {
   const req = parseFloat(document.getElementById("reqFlow").value);
   const resEl = document.getElementById("towerResult");
-  if (!req || req <= 0) { resEl.innerHTML = ""; return; }
+  if (!req || req <= 0) { resEl.innerHTML = ""; highlightFit(null); return; }
 
   const sorted = [...src.models].sort((a, b) => a.flow - b.flow);
   const fit = sorted.find(m => m.flow >= req);
 
   if (!fit) {
-    resEl.innerHTML = `<div class="result-box warn">${t("noModelFits")}</div>`;
+    resEl.innerHTML = alertBox("warn", t("noModelFits"));
+    highlightFit(null);
     return;
   }
-  resEl.innerHTML = `
-    <div class="result-box ok">
-      <div><strong>${t("selectedModel")}:</strong> ${fit.model}</div>
-      <div>${t("nominalFlow")}: ${fit.flow} m\u00b3/h</div>
-      <div>${t("dims")}: ${fit.A}\u00d7${fit.B}\u00d7${fit.H} mm</div>
-      <div>${t("operWeight")}: ${fit.operWeight} kg</div>
-      <button class="link-btn" id="viewSpecBtn">${t("viewFullSpec")} \u2192</button>
-    </div>`;
+  resEl.innerHTML = fitAlert(fit, [
+    `${t("nominalFlow")}: <strong>${fit.flow} m³/h</strong>`,
+    `${t("dims")}: ${fit.A}×${fit.B}×${fit.H} mm`,
+    `${t("operWeight")}: ${fit.operWeight} kg`
+  ]);
+  highlightFit(fit.model);
   document.getElementById("viewSpecBtn").addEventListener("click", () =>
     render({ name: "spec", sourceId: src.id, model: fit.model, reqInfo: { flow: req } }));
 }
 
-function specRow(label, value) {
-  return `<div class="spec-row"><div class="spec-label">${label}</div><div class="spec-value">${value}</div></div>`;
+function specRow(label, value, icon, wide) {
+  return `<div class="ui-spec-row${wide ? " ui-spec-wide" : ""}">
+    <span class="ui-spec-icon">${uiIcon(icon || "info")}</span>
+    <div class="ui-spec-text"><div class="ui-spec-label">${label}</div><div class="ui-spec-value">${value}</div></div>
+  </div>`;
 }
 function specGrid(rowsHtml) {
-  return `<div class="spec-grid">${rowsHtml.join("")}</div>`;
+  return `<div class="ui-spec-grid">${rowsHtml.join("")}</div>`;
 }
 
+// PC: thông số bên trái, khung "Thêm vào báo cáo" bên phải. Điện thoại: xếp dọc.
 function renderSpec(sourceId, modelName, reqInfo) {
   const src = DATABASE.sources.find(s => s.id === sourceId);
   const m = src.models.find(mm => mm.model === modelName);
   const req = reqInfo || {};
-  let html = `<button class="back-btn">${t("back")}</button>
-    <div class="detail-header">
-      ${brandBadgeHtml(src, "lg")}
-      <div>
-        <h2 class="no-margin">${m.model}</h2>
-        <p class="muted no-margin">${src.name[LANG]}</p>
-      </div>
-    </div>`;
 
-  if (src.kind === "condenser") {
-    const rows = [
-      specRow(t("heatRejection"), `${m.heatRejection} kW`),
-      specRow(t("fan"), `${t("qty")} ${m.fanQty} \u00d7 ${t("airFlow")} ${m.fanAirFlow} m\u00b3/h, ${t("power")} ${m.fanPower} kW`)
-    ];
-    if (m.pumpFlow != null) rows.push(specRow(t("pump"), `${t("qty")} ${m.pumpQty || 1} \u00d7 ${t("flow")} ${m.pumpFlow} m\u00b3/h, ${t("power")} ${m.pumpPower} kW`));
-    if (m.ammonia != null) rows.push(specRow(t("ammonia"), `${m.ammonia} kg`));
-    if (m.pipeDN) rows.push(specRow("DN", m.pipeDN));
-    rows.push(specRow(t("dims"), `${m.A}\u00d7${m.B}\u00d7${m.H} mm`));
-    rows.push(specRow(t("shipWeight"), `${m.shipWeight} kg`));
-    rows.push(specRow(t("operWeight"), `${m.operWeight} kg`));
-    html += `<div class="panel nameplate">
-      <span class="rivet tl"></span><span class="rivet tr"></span><span class="rivet bl"></span><span class="rivet br"></span>
-      ${specGrid(rows)}
-    </div>`;
-  } else if (src.kind === "coolingtower") {
-    const towerRows = [
-      specRow(t("nominalFlow"), m.flow != null ? `${m.flow} m\u00b3/h` : "\u2014"),
-      specRow(t("fan"), `${t("qty")} ${m.fanQty} \u00d7 ${t("airFlow")} ${m.fanAirFlow} m\u00b3/h, ${t("power")} ${m.fanPower} kW`)
-    ];
-    if (m.pumpFlow != null) towerRows.push(specRow(t("pump"), `${t("qty")} ${m.pumpQty || 1} \u00d7 ${t("flow")} ${m.pumpFlow} m\u00b3/h, ${t("power")} ${m.pumpPower} kW`));
-    if (m.pipeDN) towerRows.push(specRow("DN", m.pipeDN));
-    towerRows.push(specRow(t("dims"), `${m.A}\u00d7${m.B}\u00d7${m.H} mm`));
-    towerRows.push(specRow(t("shipWeight"), `${m.shipWeight} kg`));
-    towerRows.push(specRow(t("operWeight"), `${m.operWeight} kg`));
-    html += `<div class="panel nameplate">
-      <span class="rivet tl"></span><span class="rivet tr"></span><span class="rivet bl"></span><span class="rivet br"></span>
-      ${specGrid(towerRows)}
-      <h4>${t("designCondition")}</h4>
-      <p>${src.designCondition[LANG]}</p>
-    </div>`;
-  }
+  const rows = [];
+  if (src.kind === "condenser") rows.push(specRow(t("heatRejection"), `${m.heatRejection} kW`, "thermometer"));
+  if (src.kind === "coolingtower") rows.push(specRow(t("nominalFlow"), m.flow != null ? `${m.flow} m³/h` : "—", "waves"));
+  rows.push(specRow(t("fan"), `${t("qty")} ${m.fanQty} × ${t("airFlow")} ${m.fanAirFlow} m³/h, ${t("power")} ${m.fanPower} kW`, "fan", true));
+  if (m.pumpFlow != null) rows.push(specRow(t("pump"), `${t("qty")} ${m.pumpQty || 1} × ${t("flow")} ${m.pumpFlow} m³/h, ${t("power")} ${m.pumpPower} kW`, "droplets", true));
+  if (src.kind === "condenser" && m.ammonia != null) rows.push(specRow(t("ammonia"), `${m.ammonia} kg`, "snowflake"));
+  if (m.pipeDN) rows.push(specRow("DN", m.pipeDN, "cog"));
+  rows.push(specRow(t("dims"), `${m.A}×${m.B}×${m.H} mm`, "ruler"));
+  rows.push(specRow(t("shipWeight"), `${m.shipWeight} kg`, "package"));
+  rows.push(specRow(t("operWeight"), `${m.operWeight} kg`, "weight"));
+
+  const designCond = src.kind === "coolingtower"
+    ? `<hr class="ui-divider">${sectionTitle("thermometer", t("designCondition"))}<p class="ui-small ui-muted" style="margin:0">${src.designCondition[LANG]}</p>`
+    : "";
 
   const reqInputsHtml = src.kind === "condenser"
-    ? `
-      <label>${t("reqCapacity")}</label>
-      <input type="number" step="any" id="reqCapacityIn" value="${req.load != null ? req.load : ""}">
-      <label>${t("reqCondTemp")}</label>
-      <input type="number" step="any" id="reqCondTempIn" value="${req.condTemp != null ? req.condTemp : ""}">
-      <label>${t("reqWetBulb")}</label>
-      <input type="number" step="any" id="reqWetBulbIn" value="${req.wetBulb != null ? req.wetBulb : ""}">
-    `
-    : `
-      <label>${t("reqFlow")}</label>
-      <input type="number" step="any" id="reqFlowIn" value="${req.flow != null ? req.flow : ""}">
-    `;
+    ? field(t("reqCapacity"), numInput("reqCapacityIn", { value: req.load }))
+      + field(t("reqCondTemp"), numInput("reqCondTempIn", { value: req.condTemp }))
+      + field(t("reqWetBulb"), numInput("reqWetBulbIn", { value: req.wetBulb }))
+    : field(t("reqFlow"), numInput("reqFlowIn", { value: req.flow }));
 
-  html += `
-    <div class="panel">
-      <h3>${t("addToQuote")}</h3>
-      <div class="qty-row">
-        <label>${t("qty")}</label>
-        <input type="number" id="quoteQty" min="1" step="1" value="1">
-        <button class="primary-btn" id="addQuoteBtn">${t("addToQuote")}</button>
-      </div>
-      <h4>${t("reqConditionLabel")}</h4>
-      <p class="muted small">${t("reqOptionalNote")}</p>
-      ${reqInputsHtml}
-      <div id="addQuoteMsg"></div>
+  appEl.innerHTML = `
+    ${pageHead({ back: true, badge: brandBadgeHtml(src, "lg"), title: `<span class="ui-mono">${m.model}</span>`, sub: `${src.name[LANG]} ${kindChip(src.kind)}` })}
+    <div class="ui-split ui-split-end">
+      <section class="ui-stack">
+        <div class="ui-panel nameplate">
+          ${sectionTitle("box", t("fullSpecNote"))}
+          ${specGrid(rows)}
+          ${designCond}
+        </div>
+      </section>
+      <aside class="ui-aside ui-stack">
+        <div class="ui-panel ui-panel-accent">
+          ${sectionTitle("clipboard-check", t("addToQuote"))}
+          ${field(t("qty"), `<input class="ui-input" type="number" inputmode="numeric" id="quoteQty" min="1" step="1" value="1">`)}
+          <hr class="ui-divider">
+          <p class="ui-label" style="margin:0 0 2px;color:var(--ui-text)">${t("reqConditionLabel")}</p>
+          <p class="ui-muted ui-small" style="margin:0 0 12px">${t("reqOptionalNote")}</p>
+          ${reqInputsHtml}
+          <button type="button" class="ui-btn ui-btn-primary ui-btn-block" id="addQuoteBtn" style="margin-top:6px">${uiIcon("plus")}${t("addToQuote")}</button>
+          <div id="addQuoteMsg"></div>
+        </div>
+      </aside>
     </div>
   `;
 
-  appEl.innerHTML = html;
-  appEl.querySelector(".back-btn").addEventListener("click", () => render({ name: "source", sourceId }));
+  appEl.querySelector(".ui-back").addEventListener("click", () => render({ name: "source", sourceId }));
   document.getElementById("addQuoteBtn").addEventListener("click", () => {
     const qty = document.getElementById("quoteQty").value;
     const requirement = {};
@@ -708,103 +742,113 @@ function renderSpec(sourceId, modelName, reqInfo) {
       if (flow !== "") requirement.flow = flow;
     }
     addToQuoteList(sourceId, m.model, qty, Object.keys(requirement).length ? requirement : null);
-    document.getElementById("addQuoteMsg").innerHTML = `<div class="result-box ok">${t("addedToQuote")}</div>`;
+    document.getElementById("addQuoteMsg").innerHTML = alertBox("ok", `${t("addedToQuote")}
+        <div><button type="button" class="ui-btn-link" id="goReportBtn">${t("navReport")}${uiIcon("arrow-right", "ui-icon-sm")}</button></div>`);
+    document.getElementById("goReportBtn").addEventListener("click", () => render({ name: "report" }));
   });
 }
 
 // ---------------------------------------------------------------------
 // Quote report view
 // ---------------------------------------------------------------------
+// PC: danh sách thiết bị + thông tin dự án bên trái, cột xuất file bên phải.
+// Điện thoại: bảng thiết bị chuyển thành thẻ "nhãn: giá trị", nút xuất ở cuối trang.
 function renderReport() {
   const list = loadQuoteList();
   const proj = loadProjectInfo();
-  const esc = (s) => String(s || "").replace(/"/g, "&quot;");
-  let html = `<button class="back-btn">${t("back")}</button>
-    <h2>${t("quoteReport")}</h2>`;
+  const esc = (s) => String(s || "").replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;");
+  const txt = (id, val, type) => `<input class="ui-input" type="${type || "text"}" id="${id}" value="${esc(val)}">`;
 
-  html += `
-    <div class="panel">
-      <h3>${t("projectInfo")}</h3>
-      <label>${t("companyName")}</label>
-      <input type="text" id="projCompanyName" value="${esc(proj.companyName)}">
-      <label>${t("projectName")}</label>
-      <input type="text" id="projName" value="${esc(proj.projectName)}">
-      <label>${t("preparedBy")}</label>
-      <input type="text" id="projPreparedBy" value="${esc(proj.preparedBy)}">
-      <label>${t("preparedByPhone")}</label>
-      <input type="text" id="projPreparedByPhone" value="${esc(proj.preparedByPhone)}">
-      <label>${t("preparedByEmail")}</label>
-      <input type="text" id="projPreparedByEmail" value="${esc(proj.preparedByEmail)}">
-      <label>${t("installLocation")}</label>
-      <input type="text" id="projLocation" value="${esc(proj.installLocation)}">
-      <label>${t("quoteDeadline")}</label>
-      <input type="date" id="projDeadline" value="${proj.quoteDeadline || ""}">
-    </div>
-    <div class="panel">
-      <h3>${t("commercialTerms")}</h3>
-      <label>${t("deliveryTerm")}</label>
-      <input type="text" id="projDeliveryTerm" value="${esc(proj.deliveryTerm)}">
-      <label>${t("installationIncluded")}</label>
-      <input type="text" id="projInstallIncluded" value="${esc(proj.installationIncluded)}">
-      <label>${t("warrantyReq")}</label>
-      <input type="text" id="projWarranty" value="${esc(proj.warrantyReq)}">
-    </div>
-  `;
+  const projPanel = `
+    <div class="ui-panel">
+      ${sectionTitle("factory", t("projectInfo"))}
+      <div class="ui-form-grid">
+        ${field(t("companyName"), txt("projCompanyName", proj.companyName))}
+        ${field(t("projectName"), txt("projName", proj.projectName))}
+        ${field(t("preparedBy"), txt("projPreparedBy", proj.preparedBy))}
+        ${field(t("preparedByPhone"), txt("projPreparedByPhone", proj.preparedByPhone, "tel"))}
+        ${field(t("preparedByEmail"), txt("projPreparedByEmail", proj.preparedByEmail, "email"))}
+        ${field(t("installLocation"), txt("projLocation", proj.installLocation))}
+        ${field(t("quoteDeadline"), txt("projDeadline", proj.quoteDeadline, "date"))}
+      </div>
+      <hr class="ui-divider">
+      ${sectionTitle("file-text", t("commercialTerms"))}
+      <div class="ui-form-grid">
+        ${field(t("deliveryTerm"), txt("projDeliveryTerm", proj.deliveryTerm))}
+        ${field(t("installationIncluded"), txt("projInstallIncluded", proj.installationIncluded))}
+        ${field(t("warrantyReq"), txt("projWarranty", proj.warrantyReq))}
+      </div>
+    </div>`;
 
+  let equipPanel;
   if (list.length === 0) {
-    html += `<div class="panel empty-note">${t("quoteEmpty")}</div>`;
-    appEl.innerHTML = html;
-    appEl.querySelector(".back-btn").addEventListener("click", () => render({ name: "home" }));
-    wireProjectInfoInputs();
-    return;
+    equipPanel = `<div class="ui-panel ui-empty"><div class="ui-empty-icon">${uiIcon("clipboard-list")}</div>${t("quoteEmpty")}</div>`;
+  } else {
+    const rows = list.map((it, idx) => {
+      const src = DATABASE.sources.find(s => s.id === it.sourceId);
+      const m = src ? src.models.find(mm => mm.model === it.model) : null;
+      const brandName = src ? (BRANDS[brandKeyOf(src)] || {}).name || brandKeyOf(src) : it.sourceId;
+      const specLines = (src && m) ? quoteFullSpecLines(src, m, it.requirement) : ["—"];
+      const specHtml = specLines.map(l => `<div>${l}</div>`).join("");
+      return `
+        <tr>
+          <td class="ui-num">${idx + 1}</td>
+          <td data-label="${t("colBrand")}">${brandName}</td>
+          <td data-label="${t("colModel")}" class="ui-mono report-model"><strong>${it.model}</strong></td>
+          <td data-label="${t("fullSpecNote")}" class="ui-small report-spec">${specHtml}</td>
+          <td data-label="${t("colQty")}"><input class="ui-input qty-input" type="number" inputmode="numeric" min="1" step="1" data-idx="${idx}" value="${it.qty}"></td>
+          <td data-label="${t("colAccessories")}"><textarea rows="2" class="ui-textarea acc-input" data-idx="${idx}" placeholder="${t("accessoriesPlaceholder")}">${esc(it.accessories)}</textarea></td>
+          <td><button type="button" class="ui-btn ui-btn-danger ui-btn-sm remove-btn" data-idx="${idx}">${uiIcon("trash-2", "ui-icon-sm")}${t("removeItem")}</button></td>
+        </tr>`;
+    }).join("");
+    equipPanel = `
+      <div class="ui-panel">
+        ${sectionTitle("clipboard-list", t("equipList"), list.length)}
+        <div class="ui-table-wrap">
+          <table class="ui-table ui-table-stack">
+            <thead><tr><th class="ui-num">#</th><th>${t("colBrand")}</th><th>${t("colModel")}</th><th>${t("fullSpecNote")}</th><th>${t("colQty")}</th><th>${t("colAccessories")}</th><th></th></tr></thead>
+            <tbody>${rows}</tbody>
+          </table>
+        </div>
+        ${field(t("quoteNoteLabel"), `<textarea id="quoteNote" rows="3" class="ui-textarea"></textarea>`).replace('class="ui-field"', 'class="ui-field" style="margin-top:16px"')}
+      </div>`;
   }
 
-  const rows = list.map((it, idx) => {
-    const src = DATABASE.sources.find(s => s.id === it.sourceId);
-    const m = src ? src.models.find(mm => mm.model === it.model) : null;
-    const brandName = src ? (BRANDS[brandKeyOf(src)] || {}).name || brandKeyOf(src) : it.sourceId;
-    const specLines = (src && m) ? quoteFullSpecLines(src, m, it.requirement) : ["\u2014"];
-    const specHtml = specLines.map(l => `<div>${l}</div>`).join("");
-    return `
-      <tr>
-        <td>${idx + 1}</td>
-        <td>${brandName}</td>
-        <td>${it.model}</td>
-        <td>${specHtml}</td>
-        <td><input type="number" min="1" step="1" class="qty-input" data-idx="${idx}" value="${it.qty}"></td>
-        <td><textarea rows="2" class="acc-input" data-idx="${idx}" placeholder="${t("accessoriesPlaceholder")}">${esc(it.accessories)}</textarea></td>
-        <td><button class="remove-btn" data-idx="${idx}">${t("removeItem")}</button></td>
-      </tr>`;
-  }).join("");
-
-  html += `
-    <div class="panel">
-      <div class="quote-table-wrap">
-        <table>
-          <thead><tr><th>#</th><th>${t("colBrand")}</th><th>${t("colModel")}</th><th>${t("fullSpecNote")}</th><th>${t("colQty")}</th><th>${t("colAccessories")}</th><th></th></tr></thead>
-          <tbody>${rows}</tbody>
-        </table>
+  const exportPanel = list.length ? `
+    <div class="ui-panel ui-panel-accent">
+      ${sectionTitle("file-down", t("docTitle"))}
+      <div class="ui-stack" style="gap:10px">
+        <button type="button" class="ui-btn ui-btn-primary ui-btn-block" id="exportPrintBtn">${uiIcon("printer")}${t("exportPrint")}</button>
+        <button type="button" class="ui-btn ui-btn-block" id="exportWordBtn">${uiIcon("file-text")}${t("exportWord")}</button>
+        <button type="button" class="ui-btn ui-btn-block" id="exportCsvBtn">${uiIcon("file-spreadsheet")}${t("exportCsv")}</button>
       </div>
-    </div>
-    <div class="panel">
-      <label>${t("quoteNoteLabel")}</label>
-      <textarea id="quoteNote" rows="3" style="width:100%"></textarea>
-    </div>
-    <div class="panel" style="display:flex; gap:10px; flex-wrap:wrap;">
-      <button class="primary-btn" id="exportCsvBtn">${t("exportCsv")}</button>
-      <button class="primary-btn" id="exportPrintBtn">${t("exportPrint")}</button>
-      <button class="primary-btn" id="exportWordBtn">${t("exportWord")}</button>
-      <button class="remove-btn" id="clearAllBtn">${t("clearAll")}</button>
-    </div>
-    <div class="panel" style="display:flex; gap:10px; flex-wrap:wrap;">
-      <button class="primary-btn" id="dataExportBtn">${t("dataExport")}</button>
-      <button class="primary-btn" id="dataImportBtn">${t("dataImport")}</button>
+    </div>` : "";
+
+  appEl.innerHTML = `
+    ${pageHead({ back: true, title: t("quoteReport") })}
+    <div class="ui-split ui-split-end">
+      <section class="ui-stack">
+        ${equipPanel}
+        ${projPanel}
+      </section>
+      <aside class="ui-aside ui-stack">
+        ${exportPanel}
+        <div class="ui-panel">
+          <div class="ui-btn-row">
+            <button type="button" class="ui-btn" id="dataExportBtn" style="flex:1">${uiIcon("download")}${t("dataExport")}</button>
+            <button type="button" class="ui-btn" id="dataImportBtn" style="flex:1">${uiIcon("upload")}${t("dataImport")}</button>
+          </div>
+          ${list.length ? `<button type="button" class="ui-btn ui-btn-danger ui-btn-block" id="clearAllBtn" style="margin-top:10px">${uiIcon("trash-2")}${t("clearAll")}</button>` : ""}
+        </div>
+      </aside>
     </div>
   `;
 
-  appEl.innerHTML = html;
-  appEl.querySelector(".back-btn").addEventListener("click", () => render({ name: "home" }));
+  appEl.querySelector(".ui-back").addEventListener("click", () => render({ name: "home" }));
   wireProjectInfoInputs();
+  document.getElementById("dataExportBtn").addEventListener("click", dataExport);
+  document.getElementById("dataImportBtn").addEventListener("click", dataImport);
+  if (!list.length) return;
 
   appEl.querySelectorAll(".qty-input").forEach(inp => {
     inp.addEventListener("change", () => {
@@ -829,8 +873,6 @@ function renderReport() {
   document.getElementById("exportCsvBtn").addEventListener("click", () => exportQuoteCsv());
   document.getElementById("exportPrintBtn").addEventListener("click", () => exportQuotePrint());
   document.getElementById("exportWordBtn").addEventListener("click", () => exportQuoteWord());
-  document.getElementById("dataExportBtn").addEventListener("click", dataExport);
-  document.getElementById("dataImportBtn").addEventListener("click", dataImport);
 }
 
 function wireProjectInfoInputs() {
@@ -884,17 +926,47 @@ function projectAndTermsLines(proj) {
   return lines;
 }
 
+// ---------------------------------------------------------------------
+// Chuẩn trình bày phiếu yêu cầu báo giá (dùng chung cho In/PDF, Word, CSV)
+// Theo chuẩn văn bản nhóm A của công ty (chữ đen, không dùng màu nhấn của app):
+// - Font: Times New Roman (bản tiếng Việt) / Arial (bản tiếng Anh), một file một ngôn ngữ.
+// - Cỡ chữ: tên văn bản 14 - mục cấp 1 12 - thân bài 11 - chữ trong bảng 10 -
+//   ghi chú dưới bảng 10 nghiêng - chú thích bảng 10 - footer 9.
+// - Giãn dòng 1,15; cách sau đoạn 6pt.
+// - A4, lề trên 25 / dưới 20 / trái 30 / phải 15 mm; header 8 mm, footer 9 mm.
+// - Bảng: viền 0,5pt, tiêu đề đậm nền D9D9D9, lặp tiêu đề khi sang trang,
+//   STT căn giữa, số căn phải, dòng không ngắt qua trang.
+// - Footer: trái = tên văn bản, phải = "Trang x/y".
+// - Ngày dd/mm/yyyy; số: VI 1.250,5 / EN 1,250.5.
+// - Tên file: [TenNgan]_[YYYYMMDD], không dấu, không hậu tố Rev.
+// ---------------------------------------------------------------------
+const DOC_PAGE = { top: "25mm", bottom: "20mm", left: "30mm", right: "15mm", header: "8mm", footer: "9mm" };
+
+function pad2(n) { return String(n).padStart(2, "0"); }
+function fmtDate(d) { return `${pad2(d.getDate())}/${pad2(d.getMonth() + 1)}/${d.getFullYear()}`; }
+function fmtIsoDate(s) {
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(s || ""));
+  return m ? `${m[3]}/${m[2]}/${m[1]}` : (s || "");
+}
+function fileStamp(d) { return `${d.getFullYear()}${pad2(d.getMonth() + 1)}${pad2(d.getDate())}`; }
+function reportFileName(ext) {
+  const base = LANG === "vi" ? "YeuCauBaoGia_ThietBiGiaiNhiet" : "RFQ_CoolingEquipment";
+  return `${base}_${fileStamp(new Date())}.${ext}`;
+}
+function docFontFamily() {
+  return LANG === "vi" ? "'Times New Roman', Times, serif" : "Arial, Helvetica, sans-serif";
+}
+
 function exportQuoteCsv() {
   const rows = buildQuoteRows();
   const note = (document.getElementById("quoteNote") || {}).value || "";
   const proj = loadProjectInfo();
-  const dateStr = new Date().toISOString().slice(0, 10);
   const lines = [];
-  lines.push(csvEscape(t("quoteReport")));
-  lines.push(csvEscape(t("reportDate") + ": " + dateStr));
+  lines.push(csvEscape(t("docTitle")));
+  lines.push(csvEscape(t("reportDate") + ": " + fmtDate(new Date())));
   projectAndTermsLines(proj).forEach(l => lines.push(csvEscape(l)));
   lines.push("");
-  const header = ["STT", t("colBrand"), t("colModel"), t("fullSpecNote"), t("colQty"), t("colAccessories")];
+  const header = [LANG === "vi" ? "STT" : "No.", t("colBrand"), t("colModel"), t("fullSpecNote"), t("colQty"), t("colAccessories")];
   lines.push(header.map(csvEscape).join(","));
   rows.forEach(r => {
     lines.push([r.stt, r.brandName, r.model, r.specLines.join("\n"), r.qty, r.accessories].map(csvEscape).join(","));
@@ -905,12 +977,15 @@ function exportQuoteCsv() {
   }
   lines.push("");
   lines.push(csvEscape(t("disclaimerLabel") + ": " + t("disclaimerText")));
-  const csvContent = "\uFEFF" + lines.join("\r\n");
-  const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+  const csvContent = "﻿" + lines.join("\r\n");
+  downloadBlob(new Blob([csvContent], { type: "text/csv;charset=utf-8;" }), reportFileName("csv"));
+}
+
+function downloadBlob(blob, filename) {
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
-  a.download = `bao-cao-thiet-bi-${dateStr}.csv`;
+  a.download = filename;
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
@@ -918,37 +993,38 @@ function exportQuoteCsv() {
 }
 
 function vnDateBlock(d) {
-  if (LANG !== "vi") return d.toLocaleDateString("en-US");
-  return `ng\u00e0y ${d.getDate()} th\u00e1ng ${d.getMonth() + 1} n\u0103m ${d.getFullYear()}`;
+  if (LANG !== "vi") return `Date: ${fmtDate(d)}`;
+  return `Ngày ${pad2(d.getDate())} tháng ${pad2(d.getMonth() + 1)} năm ${d.getFullYear()}`;
 }
 
-// Shared print-quality CSS: Times New Roman, standard body/table/title sizes and A4
-// margins following the common Vietnamese administrative-document convention (Thong tu
-// 01/2011/TT-BNV) -- there isn't a single numbered TCVN standard for RFQ-style document
-// layout specifically, so this follows that widely-used convention rather than a
-// numbered TCVN. Sizes/margins tuned down from an earlier pass that ran too large and
-// looked unbalanced on the page.
-function documentStyleBlock(pageMarginCss) {
+function documentStyleBlock() {
   return `
-    ${pageMarginCss || ""}
-    body { font-family: 'Times New Roman', Times, serif; font-size: 11.5pt; color: #000; line-height: 1.4; }
-    .doc-header-row { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 4pt; }
+    body { font-family: ${docFontFamily()}; font-size: 11pt; color: #000; line-height: 1.15; }
+    p { margin: 0 0 6pt; }
+    table.doc-header-row { width: 100%; border-collapse: collapse; margin-bottom: 6pt; }
+    table.doc-header-row td { border: none; padding: 0; vertical-align: top; }
     .letterhead-company { font-size: 12pt; font-weight: bold; text-transform: uppercase; }
-    .doc-date { font-size: 11pt; font-style: italic; white-space: nowrap; }
-    h1.doc-title { font-size: 14pt; font-weight: bold; text-align: center; text-transform: uppercase; margin: 10pt 0 2pt; letter-spacing: 0.5px; }
-    .doc-title-rule { border: none; border-top: 1.5px solid #000; width: 45%; margin: 0 auto 12pt; }
-    .info-columns { display: flex; justify-content: space-between; gap: 24pt; margin-bottom: 8pt; }
-    .info-columns table { border-collapse: collapse; }
-    .info-columns td { border: none; padding: 1.5pt 8pt 1.5pt 0; font-size: 11.5pt; vertical-align: top; }
-    table.equip-table { border-collapse: collapse; width: 100%; margin-top: 8pt; table-layout: fixed; }
-    table.equip-table th, table.equip-table td { border: 1px solid #000; padding: 5pt; font-size: 10.5pt; text-align: left; vertical-align: top; word-wrap: break-word; }
-    table.equip-table th { background: #e6e6e6; font-weight: bold; text-align: center; }
-    .note-block { margin-top: 12pt; font-size: 11pt; }
-    .disclaimer-block { margin-top: 14pt; font-size: 9.5pt; font-style: italic; color: #333; border-top: 1px solid #999; padding-top: 6pt; }
-    table.signature-block { width: 100%; margin-top: 26pt; border-collapse: collapse; }
-    table.signature-block td { border: none; text-align: center; font-size: 11.5pt; vertical-align: top; }
+    .doc-date { font-size: 11pt; font-style: italic; white-space: nowrap; text-align: right; }
+    h1.doc-title { font-size: 14pt; font-weight: bold; text-align: center; text-transform: uppercase; margin: 12pt 0 12pt; }
+    h2.doc-h1 { font-size: 12pt; font-weight: bold; text-transform: uppercase; margin: 12pt 0 6pt; }
+    table.info-columns { width: 100%; border-collapse: collapse; margin-bottom: 6pt; }
+    table.info-columns td { border: none; padding: 0; vertical-align: top; }
+    table.info-columns table { border-collapse: collapse; }
+    table.info-columns table td { padding: 1pt 8pt 1pt 0; font-size: 11pt; }
+    .doc-caption { font-size: 10pt; margin: 6pt 0 3pt; }
+    table.equip-table { border-collapse: collapse; width: 100%; table-layout: fixed; }
+    table.equip-table thead { display: table-header-group; }
+    table.equip-table tr { page-break-inside: avoid; break-inside: avoid; }
+    table.equip-table th, table.equip-table td { border: 0.5pt solid #000; padding: 3pt 4pt; font-size: 10pt; line-height: 1.15; text-align: left; vertical-align: top; word-wrap: break-word; }
+    table.equip-table th { background: #D9D9D9; font-weight: bold; text-align: center; vertical-align: middle; }
+    table.equip-table td.c { text-align: center; }
+    table.equip-table td.r { text-align: right; }
+    .doc-note-under { font-size: 10pt; font-style: italic; margin-top: 3pt; }
+    table.signature-block { width: 100%; margin-top: 18pt; border-collapse: collapse; page-break-inside: avoid; }
+    table.signature-block td { border: none; text-align: center; font-size: 11pt; vertical-align: top; }
     .signature-role { font-weight: bold; text-transform: uppercase; }
-    .signature-space { height: 48pt; }
+    .signature-hint { font-style: italic; font-size: 10pt; }
+    .signature-space { height: 54pt; }
   `;
 }
 
@@ -956,24 +1032,21 @@ function buildReportDocumentHtml() {
   const rows = buildQuoteRows();
   const note = (document.getElementById("quoteNote") || {}).value || "";
   const proj = loadProjectInfo();
-  const now = new Date();
-  const dateBlock = vnDateBlock(now);
-  const esc = (s) => String(s || "").replace(/</g, "&lt;");
+  const esc = (s) => String(s || "").replace(/&/g, "&amp;").replace(/</g, "&lt;");
   const rowsHtml = rows.map(r => `
     <tr>
-      <td>${r.stt}</td><td>${r.brandName}</td><td>${r.model}</td>
+      <td class="c">${r.stt}</td><td>${esc(r.brandName)}</td><td>${esc(r.model)}</td>
       <td>${r.specLines.map(l => esc(l)).join("<br>")}</td>
-      <td style="text-align:center">${r.qty}</td>
+      <td class="r">${fmtNum(r.qty)}</td>
       <td>${esc(r.accessories).replace(/\n/g, "<br>")}</td>
     </tr>`).join("");
 
-  // Two visually balanced columns instead of one long list: left = who/what/where,
-  // right = contact + commercial terms.
+  // Hai cột cân đối: trái = đơn vị / dự án / địa điểm / hạn; phải = liên hệ + điều kiện thương mại
   const leftPairs = [
     [t("companyName"), proj.companyName],
     [t("projectName"), proj.projectName],
     [t("installLocation"), proj.installLocation],
-    [t("quoteDeadline"), proj.quoteDeadline]
+    [t("quoteDeadline"), fmtIsoDate(proj.quoteDeadline)]
   ];
   const rightPairs = [
     [t("preparedBy"), proj.preparedBy],
@@ -984,77 +1057,102 @@ function buildReportDocumentHtml() {
     [t("warrantyReq"), proj.warrantyReq]
   ];
   const pairRows = (pairs) => pairs.filter(p => p[1]).map(p =>
-    `<tr><td><strong>${esc(p[0])}</strong></td><td>${esc(p[1])}</td></tr>`).join("");
-  const leftRows = pairRows(leftPairs);
-  const rightRows = pairRows(rightPairs);
+    `<tr><td><strong>${esc(p[0].replace(/\s*\((VD|e\.g\.)[^)]*\)\s*$/i, ""))}:</strong></td><td>${esc(p[1])}</td></tr>`).join("");
 
   return {
-    rowsHtml, note, dateBlock,
+    rowsHtml, note: esc(note), dateBlock: vnDateBlock(new Date()),
     companyName: esc(proj.companyName),
     preparedBy: esc(proj.preparedBy),
-    leftRows, rightRows
+    leftRows: pairRows(leftPairs), rightRows: pairRows(rightPairs)
   };
 }
 
 function documentBodyHtml(doc) {
   const { rowsHtml, note, dateBlock, companyName, preparedBy, leftRows, rightRows } = doc;
-  const esc = (s) => String(s || "").replace(/</g, "&lt;");
+  const vi = LANG === "vi";
+  let sec = 0;
+  const h1 = (text) => `<h2 class="doc-h1">${++sec}. ${text}</h2>`;
   return `
-    <div class="doc-header-row">
-      <div class="letterhead-company">${companyName || "&nbsp;"}</div>
-      <div class="doc-date">${dateBlock}</div>
-    </div>
+    <table class="doc-header-row"><tr>
+      <td class="letterhead-company">${companyName || "&nbsp;"}</td>
+      <td class="doc-date">${dateBlock}</td>
+    </tr></table>
     <h1 class="doc-title">${t("docTitle")}</h1>
-    <hr class="doc-title-rule">
     ${(leftRows || rightRows) ? `
-    <div class="info-columns">
-      <table>${leftRows}</table>
-      <table>${rightRows}</table>
-    </div>` : ""}
+    ${h1(t("projectInfo"))}
+    <table class="info-columns"><tr>
+      <td style="width:50%"><table>${leftRows}</table></td>
+      <td style="width:50%"><table>${rightRows}</table></td>
+    </tr></table>` : ""}
+    ${h1(t("equipList"))}
+    <p class="doc-caption">${vi ? "Bảng 1. Danh mục thiết bị yêu cầu báo giá" : "Table 1. Equipment requested for quotation"}</p>
     <table class="equip-table">
       <colgroup>
-        <col style="width:4%"><col style="width:11%"><col style="width:12%">
-        <col style="width:39%"><col style="width:6%"><col style="width:28%">
+        <col style="width:7%"><col style="width:14%"><col style="width:12%">
+        <col style="width:35%"><col style="width:9%"><col style="width:23%">
       </colgroup>
-      <thead><tr><th>#</th><th>${t("colBrand")}</th><th>${t("colModel")}</th><th>${t("fullSpecNote")}</th><th>${t("colQty")}</th><th>${t("colAccessories")}</th></tr></thead>
+      <thead><tr><th>${vi ? "STT" : "No."}</th><th>${t("colBrand")}</th><th>${t("colModel")}</th><th>${t("fullSpecNote")}</th><th>${t("colQty")}</th><th>${t("colAccessories")}</th></tr></thead>
       <tbody>${rowsHtml}</tbody>
     </table>
-    ${note.trim() ? `<div class="note-block"><strong>${t("quoteNoteLabel")}:</strong><br>${esc(note)}</div>` : ""}
-    <div class="disclaimer-block"><strong>${t("disclaimerLabel")}:</strong> ${esc(t("disclaimerText"))}</div>
+    <p class="doc-note-under"><strong>${t("disclaimerLabel")}:</strong> ${t("disclaimerText")}</p>
+    ${note.trim() ? `${h1(t("quoteNoteLabel").replace(/\s*\(.*\)$/, ""))}<p>${note.replace(/\n/g, "<br>")}</p>` : ""}
     <table class="signature-block"><tr>
       <td style="width:50%"></td>
       <td style="width:50%">
         <div class="signature-role">${t("signatureLabel")}</div>
+        <div class="signature-hint">${vi ? "(Ký, ghi rõ họ tên)" : "(Signature and full name)"}</div>
         <div class="signature-space"></div>
-        <div>${preparedBy}</div>
+        <div><strong>${preparedBy}</strong></div>
       </td>
     </tr></table>
   `;
+}
+
+function footerLeftText() {
+  return LANG === "vi" ? "Phiếu yêu cầu báo giá thiết bị" : "Equipment quote request";
 }
 
 function exportQuotePrint() {
   const doc = buildReportDocumentHtml();
   const win = window.open("", "_blank");
   if (!win) return;
-  win.document.write(`
-    <html><head><title>${t("quoteReport")}</title>
-    <meta charset="UTF-8">
+  const pageWord = LANG === "vi" ? "Trang" : "Page";
+  const p = DOC_PAGE;
+  win.document.write(`<!DOCTYPE html>
+    <html lang="${LANG}"><head><meta charset="UTF-8">
+    <title>${reportFileName("pdf").replace(/\.pdf$/, "")}</title>
     <style>
-      @page { size: A4; margin: 18mm; }
-      body { padding: 0 0 24px; }
+      @page {
+        size: A4;
+        margin: ${p.top} ${p.right} ${p.bottom} ${p.left};
+        @bottom-left { content: "${footerLeftText()}"; font-family: ${docFontFamily()}; font-size: 9pt; }
+        @bottom-right { content: "${pageWord} " counter(page) "/" counter(pages); font-family: ${docFontFamily()}; font-size: 9pt; }
+      }
+      html { background: #e9eaec; }
+      body { margin: 0; padding: 0 0 24px; }
       .doc-toolbar {
         position: sticky; top: 0; z-index: 10;
         display: flex; gap: 8px; justify-content: flex-end;
-        background: #f2f2f2; border-bottom: 1px solid #ccc;
-        padding: 10px 18mm; margin: 0 0 18mm;
+        background: #f6f6f6; border-bottom: 1px solid #ccc;
+        padding: 10px 16px;
       }
       .doc-toolbar button {
-        font-family: Arial, sans-serif; font-size: 13px; padding: 7px 14px;
-        border-radius: 4px; border: 1px solid #999; background: #fff; cursor: pointer;
+        font-family: Arial, sans-serif; font-size: 13px; padding: 8px 14px; min-height: 36px;
+        border-radius: 6px; border: 1px solid #999; background: #fff; color: #000; cursor: pointer;
       }
       .doc-toolbar button.primary { background: #222; color: #fff; border-color: #222; }
-      .doc-body { padding: 0 18mm; }
-      @media print { .doc-toolbar { display: none; } .doc-body { padding: 0; } }
+      .doc-body {
+        background: #fff; box-sizing: border-box;
+        width: 210mm; max-width: 100%; min-height: 297mm;
+        margin: 16px auto; padding: ${p.top} ${p.right} ${p.bottom} ${p.left};
+        box-shadow: 0 1px 4px rgba(0,0,0,0.15);
+      }
+      @media (max-width: 210mm) { .doc-body { padding: 16px; min-height: 0; margin: 0; } }
+      @media print {
+        html { background: #fff; }
+        .doc-toolbar { display: none; }
+        .doc-body { width: auto; min-height: 0; margin: 0; padding: 0; box-shadow: none; }
+      }
       ${documentStyleBlock()}
     </style>
     </head><body>
@@ -1077,49 +1175,71 @@ function exportQuotePrint() {
 
 function exportQuoteWord() {
   const doc = buildReportDocumentHtml();
-  // Word recognizes HTML saved with a .doc extension and the mso namespaces below;
-  // this is a plain client-side download (no server, no external library needed).
-  // Real .docx (OOXML) generation would need an external JS library loaded over the
-  // network, which would break this app's fully-offline PWA design -- flagged to user.
+  const p = DOC_PAGE;
+  const pageWord = LANG === "vi" ? "Trang" : "Page";
+  // Word mở được HTML lưu đuôi .doc kèm namespace mso; footer dùng trường PAGE / NUMPAGES.
+  // Khối footer được đẩy ra ngoài trang (margin-left rất lớn) để không hiện trong thân văn bản.
   const docHtml = `
     <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">
     <head><meta charset="UTF-8">
-    <title>${t("quoteReport")}</title>
+    <title>${t("docTitle")}</title>
     <!--[if gte mso 9]>
-    <xml><w:WordDocument><w:View>Print</w:View></w:WordDocument></xml>
+    <xml><w:WordDocument><w:View>Print</w:View><w:Zoom>100</w:Zoom></w:WordDocument></xml>
     <![endif]-->
     <style>
-      @page WordSection1 { size: 21cm 29.7cm; margin: 1.8cm; mso-page-orientation: portrait; }
+      @page WordSection1 {
+        size: 21cm 29.7cm;
+        margin: ${p.top} ${p.right} ${p.bottom} ${p.left};
+        mso-header-margin: ${p.header}; mso-footer-margin: ${p.footer};
+        mso-footer: f1;
+        mso-page-orientation: portrait;
+      }
       div.WordSection1 { page: WordSection1; }
+      p.MsoFooter { font-family: ${docFontFamily()}; font-size: 9pt; margin: 0; tab-stops: right 165mm; }
+      table#hdrftr { margin: 0 0 0 9in; }
       ${documentStyleBlock()}
     </style>
     </head><body>
     <div class="WordSection1">
     ${documentBodyHtml(doc)}
     </div>
+    <table id="hdrftr" border="0" cellspacing="0" cellpadding="0"><tr><td>
+      <div style="mso-element:footer" id="f1">
+        <p class="MsoFooter">${footerLeftText()}<span style="mso-tab-count:1"></span>${pageWord} <span style="mso-field-code:' PAGE '">1</span>/<span style="mso-field-code:' NUMPAGES '">1</span></p>
+      </div>
+    </td></tr></table>
     </body></html>
   `;
-  const blob = new Blob(["\ufeff", docHtml], { type: "application/msword" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  const fileDateStr = new Date().toISOString().slice(0, 10);
-  a.href = url;
-  a.download = `bao-cao-thiet-bi-${fileDateStr}.doc`;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
+  downloadBlob(new Blob(["﻿", docHtml], { type: "application/msword" }), reportFileName("doc"));
 }
 
 // ---------------------------------------------------------------------
 // Language toggle & init
 // ---------------------------------------------------------------------
+function setText(id, text) { const el = document.getElementById(id); if (el) el.textContent = text; }
 function refreshLangUI() {
-  document.getElementById("langToggle").textContent = LANG === "vi" ? "EN" : "VI";
-  document.getElementById("appTitle").textContent = t("appTitle");
+  document.documentElement.lang = LANG;
+  document.title = t("appTitle");
+  setText("langLabel", LANG === "vi" ? "EN" : "VI");
+  setText("appSub", t("appSub"));
+  setText("appTitle", t("appTitle"));
+  setText("quoteLabel", t("navReport"));
+  setText("navQuoteLabel", t("navReport"));
+  setText("navHomeLabel", t("navHome"));
+}
+// Đánh dấu mục đang mở trên thanh dưới (điện thoại)
+function refreshNavState(view) {
+  const onReport = view && view.name === "report";
+  document.getElementById("navHome").toggleAttribute("aria-current", !onReport);
+  if (!onReport) document.getElementById("navHome").setAttribute("aria-current", "page");
+  document.getElementById("navQuote").toggleAttribute("aria-current", onReport);
+  if (onReport) document.getElementById("navQuote").setAttribute("aria-current", "page");
 }
 
 document.getElementById("quoteToggle").addEventListener("click", () => render({ name: "report" }));
+document.getElementById("navQuote").addEventListener("click", () => render({ name: "report" }));
+document.getElementById("navHome").addEventListener("click", () => render({ name: "home" }));
+document.getElementById("homeBrand").addEventListener("click", () => render({ name: "home" }));
 
 document.getElementById("langToggle").addEventListener("click", () => {
   LANG = LANG === "vi" ? "en" : "vi";
@@ -1130,8 +1250,9 @@ document.getElementById("langToggle").addEventListener("click", () => {
 
 let currentView = { name: "home" };
 const origRender = render;
-render = function (view) { currentView = view; origRender(view); };
+render = function (view) { currentView = view; refreshNavState(view); origRender(view); };
 
+uiIconsMount();
 refreshLangUI();
 refreshQuoteBadge();
 render({ name: "home" });
